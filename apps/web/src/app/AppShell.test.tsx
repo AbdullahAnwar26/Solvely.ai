@@ -1,7 +1,8 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createMemoryRouter, RouterProvider } from "react-router";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { mockApi, USER } from "../test/mockApi";
 import { setViewportWidth } from "../test/viewport";
 import { routes } from "./routes";
 import { SIDEBAR_STORAGE_KEY } from "./sidebarPreference";
@@ -16,6 +17,11 @@ function shellElement() {
   if (!shell) throw new Error("shell not rendered");
   return shell;
 }
+
+// The shell sits behind the auth guard, so every test starts with a signed-in session.
+beforeEach(() => {
+  mockApi({ "GET /api/v1/auth/me/": { status: 200, body: USER } });
+});
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -92,6 +98,8 @@ describe("AppShell keyboard", () => {
     expect(screen.getByRole("button", { name: "Collapse sidebar" })).toHaveFocus();
     await user.tab();
     expect(within(screen.getByRole("navigation", { name: "Main" })).getByRole("link", { name: "Home" })).toHaveFocus();
+    await user.tab();
+    expect(within(screen.getByRole("navigation", { name: "Main" })).getByRole("button", { name: "Sign out" })).toHaveFocus();
     await user.tab();
     expect(within(screen.getByRole("main")).getByRole("link", { name: "Go to home" })).toHaveFocus();
   });

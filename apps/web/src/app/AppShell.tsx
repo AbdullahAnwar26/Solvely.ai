@@ -1,7 +1,8 @@
 import { Suspense, useEffect, useRef, useState, type MouseEvent } from "react";
 import { NavLink, Outlet } from "react-router";
 import "./AppShell.css";
-import { CloseIcon, HomeIcon, MenuIcon, SidebarIcon } from "./icons";
+import { useSession } from "../auth/SessionContext";
+import { CloseIcon, HomeIcon, MenuIcon, SidebarIcon, SignOutIcon } from "./icons";
 import { useLayoutMode, type LayoutMode } from "./layoutMode";
 import { readSidebarCollapsed, writeSidebarCollapsed } from "./sidebarPreference";
 
@@ -15,6 +16,25 @@ export function AppShell() {
   // The sheet/drawer is open only for the layout it was opened in, so a resize closes it.
   const [overlayFor, setOverlayFor] = useState<LayoutMode | null>(null);
   const overlay = mode !== "docked" && overlayFor === mode;
+
+  const { state, signOut } = useSession();
+  const email = state.status === "signedIn" ? state.user.email : null;
+  const [signOutPending, setSignOutPending] = useState(false);
+  const [signOutError, setSignOutError] = useState<string | null>(null);
+
+  const onSignOut = async () => {
+    if (signOutPending) return;
+    setSignOutPending(true);
+    setSignOutError(null);
+    setOverlayFor(null);
+    try {
+      // On success the route guard redirects to /sign-in, which unmounts the shell.
+      await signOut();
+    } catch {
+      setSignOutError("Could not sign out. Check your connection and try again.");
+      setSignOutPending(false);
+    }
+  };
 
   const toggleRef = useRef<HTMLButtonElement>(null);
   const navRef = useRef<HTMLElement>(null);
@@ -127,11 +147,34 @@ export function AppShell() {
             </li>
           ))}
         </ul>
+        <div className="sidebar-account">
+          {email && (
+            <p className={expanded ? "account-email" : "visually-hidden"} title={email}>
+              <span className="visually-hidden">Signed in as </span>
+              {email}
+            </p>
+          )}
+          <button
+            type="button"
+            className="nav-link nav-button"
+            title={expanded ? undefined : "Sign out"}
+            disabled={signOutPending}
+            onClick={onSignOut}
+          >
+            <SignOutIcon />
+            <span className={expanded ? "nav-label" : "visually-hidden"}>Sign out</span>
+          </button>
+        </div>
       </nav>
 
       {overlay && <div className="scrim" aria-hidden="true" onClick={() => closeOverlay(true)} />}
 
       <main ref={mainRef} id="main" className="content" tabIndex={-1} inert={overlay}>
+        {signOutError && (
+          <p role="alert" className="shell-alert">
+            {signOutError}
+          </p>
+        )}
         <Suspense
           fallback={
             <p role="status" className="visually-hidden">

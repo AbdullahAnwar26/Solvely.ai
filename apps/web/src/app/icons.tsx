@@ -52,3 +52,13 @@ export function CloseIcon() {
     </Icon>
   );
 }
+
+export function SignOutIcon() {
+  return (
+    <Icon>
+      <path d="M10 5H6v14h4" />
+      <path d="M14 8l4 4-4 4" />
+      <path d="M18 12H9" />
+    </Icon>
+  );
+}
