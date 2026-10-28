@@ -1,0 +1,169 @@
+/*
+ * Design tokens from _bmad-output/planning-artifacts/ux-designs/ux-Solvely.ai-2026-10-28/DESIGN.md.
+ * Components use these variables only (no hex values in components; UX-DR1).
+ *
+ * Theme: follows prefers-color-scheme by default. A [data-theme="light"|"dark"] attribute on
+ * <html> overrides the device setting (the toggle itself arrives in Story 1.6).
+ * Every colour token exists in both sets.
+ */
+
+:root {
+  color-scheme: light;
+
+  /* colors.light */
+  --color-paper: #faf7f2;
+  --color-surface: #f3eee5;
+  --color-surface-raised: #ffffff;
+  --color-surface-subtle: #e8e1d5;
+  --color-board: #fffdf8;
+  --color-ink: #1f2430;
+  --color-ink-muted: #555c69;
+  --color-border: #e2dacd;
+  --color-border-strong: #8c8374;
+  --color-primary: #2f4b7c;
+  --color-on-primary: #ffffff;
+  --color-accent: #5c7a68;
+  --color-ai-ink: #2f5d8a;
+  --color-learner-ink: #a34e2a;
+  --color-highlight: #f5e6b8;
+  --color-focus: #2f6fb0;
+  --color-success: #2e6b47;
+  --color-warning: #8a5a00;
+  --color-danger: #b3261e;
+  --color-on-danger: #ffffff;
+  --color-scrim: rgba(31, 36, 48, 0.4);
+
+  /* elevation (light); dark replaces shadows with tone + outline */
+  --elevation-flat: none;
+  --elevation-raised: 0 1px 2px rgba(31, 36, 48, 0.06), 0 2px 8px rgba(31, 36, 48, 0.06);
+  --elevation-overlay: 0 8px 32px rgba(31, 36, 48, 0.14);
+  --elevation-outline: none;
+
+  /* typography: families */
+  --font-serif: "Source Serif 4", "Iowan Old Style", Georgia, serif;
+  --font-sans: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Code", Menlo, Consolas, monospace;
+  --font-math: KaTeX_Main, serif;
+
+  /* typography: roles (size / weight / line-height / tracking) */
+  --font-display-size: 32px;
+  --font-display-weight: 600;
+  --font-display-line-height: 1.2;
+  --font-display-letter-spacing: -0.01em;
+  --font-headline-size: 24px;
+  --font-headline-weight: 600;
+  --font-headline-line-height: 1.3;
+  --font-title-size: 18px;
+  --font-title-weight: 600;
+  --font-title-line-height: 1.4;
+  --font-explanation-size: 18px;
+  --font-explanation-weight: 400;
+  --font-explanation-line-height: 1.65;
+  --font-explanation-mobile-size: 17px;
+  --font-explanation-mobile-line-height: 1.6;
+  --font-body-size: 16px;
+  --font-body-weight: 400;
+  --font-body-line-height: 1.5;
+  --font-label-size: 14px;
+  --font-label-weight: 600;
+  --font-label-line-height: 1.4;
+  --font-caption-size: 13px;
+  --font-caption-weight: 400;
+  --font-caption-line-height: 1.4;
+  --font-code-size: 15px;
+  --font-code-weight: 400;
+  --font-code-line-height: 1.55;
+
+  /* rounded */
+  --radius-sm: 4px;
+  --radius: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+
+  /* spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-gutter-mobile: 16px;
+  --space-gutter-desktop: 24px;
+  --space-panel-width: 400px;
+  --space-panel-width-min: 320px;
+  --space-sidebar-width: 248px;
+  --space-sidebar-collapsed: 56px;
+  --space-reading-measure: 66ch;
+  --space-touch-target: 44px;
+
+  /* motion */
+  --motion-duration-quick: 120ms;
+  --motion-duration-calm: 220ms;
+  --motion-duration-step: 360ms;
+  --motion-easing: cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* colors.dark: applied when the device prefers dark, unless light is forced. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --color-paper: #171a21;
+    --color-surface: #1e222b;
+    --color-surface-raised: #262b36;
+    --color-surface-subtle: #2e3440;
+    --color-board: #1b1f27;
+    --color-ink: #ece7de;
+    --color-ink-muted: #a9a398;
+    --color-border: #30353f;
+    --color-border-strong: #6f7684;
+    --color-primary: #9db8e8;
+    --color-on-primary: #12161d;
+    --color-accent: #9cbfa8;
+    --color-ai-ink: #8fb3e0;
+    --color-learner-ink: #e59a72;
+    --color-highlight: #4a4025;
+    --color-focus: #a8c7fa;
+    --color-success: #8ccb9f;
+    --color-warning: #e6b85c;
+    --color-danger: #f2948c;
+    --color-on-danger: #12161d;
+    --color-scrim: rgba(0, 0, 0, 0.55);
+    --elevation-raised: none;
+    --elevation-overlay: none;
+    --elevation-outline: 0 0 0 1px var(--color-border);
+  }
+}
+
+/* Explicit dark override (same values as above). */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-paper: #171a21;
+  --color-surface: #1e222b;
+  --color-surface-raised: #262b36;
+  --color-surface-subtle: #2e3440;
+  --color-board: #1b1f27;
+  --color-ink: #ece7de;
+  --color-ink-muted: #a9a398;
+  --color-border: #30353f;
+  --color-border-strong: #6f7684;
+  --color-primary: #9db8e8;
+  --color-on-primary: #12161d;
+  --color-accent: #9cbfa8;
+  --color-ai-ink: #8fb3e0;
+  --color-learner-ink: #e59a72;
+  --color-highlight: #4a4025;
+  --color-focus: #a8c7fa;
+  --color-success: #8ccb9f;
+  --color-warning: #e6b85c;
+  --color-danger: #f2948c;
+  --color-on-danger: #12161d;
+  --color-scrim: rgba(0, 0, 0, 0.55);
+  --elevation-raised: none;
+  --elevation-overlay: none;
+  --elevation-outline: 0 0 0 1px var(--color-border);
+}
