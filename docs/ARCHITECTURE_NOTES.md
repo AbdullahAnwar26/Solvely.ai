@@ -8,3 +8,5 @@
 4. In any other code path, fetch rows only via `YourModel.objects.for_user(user)`.
 5. Register the endpoint in `apps/api/tests/isolation.py` with `register_owned_endpoint(model, url, make=..., create_payload=..., update_payload=...)`. The shared cross-user checks in `tests/test_ownership.py` then run against it; an unregistered concrete `OwnedModel` fails the guard test.
 6. Account deletion (Story 1.5) relies on `on_delete=CASCADE` from `owner`; keep it.
+
+Owned models are deleted by cascade when their user is deleted; any new FK to the user model must use `on_delete=CASCADE` (enforced by the FK guard in `tests/test_account_deletion.py`).
