@@ -11,6 +11,7 @@ from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import serializers, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -43,6 +44,11 @@ logger = logging.getLogger(__name__)
 
 RESET_EMAIL_SUBJECT = "Reset your Whiteboard Tutor password"
 
+ERROR = OpenApiResponse(description="Error envelope (see core.errors).")
+EMPTY_204 = OpenApiResponse(description="No content.")
+ACCEPTED_202 = OpenApiResponse(description="Accepted (empty object).")
+OK_EMPTY_200 = OpenApiResponse(description="Password changed (empty object).")
+
 
 class InvalidCredentials(ApiError):
     status_code = 400
@@ -62,6 +68,7 @@ class CsrfCookieView(APIView):
 
     permission_classes = [AllowAny]
 
+    @extend_schema(request=None, responses={204: EMPTY_204})
     def get(self, request):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -73,6 +80,10 @@ class RegisterView(APIView):
     permission_classes = [AllowAny]
     throttle_classes = [RegisterRateThrottle]
 
+    @extend_schema(
+        request=RegisterSerializer,
+        responses={201: RegisteredUserSerializer, 400: ERROR, 429: ERROR},
+    )
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -93,6 +104,10 @@ class LoginView(APIView):
     permission_classes = [AllowAny]
     throttle_classes = [LoginRateThrottle, LoginEmailRateThrottle]
 
+    @extend_schema(
+        request=LoginSerializer,
+        responses={200: RegisteredUserSerializer, 400: ERROR, 429: ERROR},
+    )
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -114,6 +129,7 @@ class LoginView(APIView):
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(request=None, responses={204: EMPTY_204, 403: ERROR})
     def post(self, request):
         # flush(): deletes the session row server-side and clears the cookie.
         logout(request._request)
@@ -123,6 +139,7 @@ class LogoutView(APIView):
 class MeView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(responses={200: RegisteredUserSerializer, 403: ERROR})
     def get(self, request):
         return Response(RegisteredUserSerializer(request.user).data)
 
@@ -140,6 +157,10 @@ class AccountDeleteView(APIView):
     permission_classes = [IsAuthenticated]
     throttle_classes = [AccountDeleteRateThrottle, AccountDeleteUserRateThrottle]
 
+    @extend_schema(
+        request=AccountDeleteSerializer,
+        responses={204: EMPTY_204, 400: ERROR, 403: ERROR, 429: ERROR},
+    )
     def delete(self, request):
         serializer = AccountDeleteSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -188,6 +209,10 @@ class PasswordResetRequestView(APIView):
     permission_classes = [AllowAny]
     throttle_classes = [PasswordResetRateThrottle]
 
+    @extend_schema(
+        request=PasswordResetRequestSerializer,
+        responses={202: ACCEPTED_202, 400: ERROR, 429: ERROR},
+    )
     def post(self, request):
         serializer = PasswordResetRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -227,6 +252,10 @@ class PasswordResetConfirmView(APIView):
     permission_classes = [AllowAny]
     throttle_classes = [PasswordResetConfirmRateThrottle]
 
+    @extend_schema(
+        request=PasswordResetConfirmSerializer,
+        responses={200: OK_EMPTY_200, 400: ERROR, 429: ERROR},
+    )
     def post(self, request):
         serializer = PasswordResetConfirmSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

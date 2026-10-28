@@ -1,8 +1,10 @@
 from django.db import connection
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework.decorators import api_view, throttle_classes
 from rest_framework.response import Response
 
 
+@extend_schema(responses={200: OpenApiResponse(description="Process is up.")})
 @api_view(["GET"])
 @throttle_classes([])
 def health(request):
@@ -10,6 +12,12 @@ def health(request):
     return Response({"status": "ok"})
 
 
+@extend_schema(
+    responses={
+        200: OpenApiResponse(description="Database reachable."),
+        503: OpenApiResponse(description="Database unavailable."),
+    }
+)
 @api_view(["GET"])
 @throttle_classes([])
 def ready(request):
