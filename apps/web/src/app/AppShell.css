@@ -1,0 +1,255 @@
+/* App shell layout per EXPERIENCE.md "Responsive & Platform" and DESIGN.md "Sidebar". */
+
+.shell {
+  --topbar-height: 56px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.skip-link {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  z-index: 100;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius);
+  background: var(--color-surface-raised);
+  box-shadow: var(--elevation-overlay), var(--elevation-outline);
+  color: var(--color-primary);
+  font-size: var(--font-label-size);
+  font-weight: var(--font-label-weight);
+  transform: translateY(-200%);
+}
+
+.skip-link:focus {
+  transform: none;
+}
+
+.brand {
+  overflow: hidden;
+  font-family: var(--font-serif);
+  font-size: var(--font-title-size);
+  font-weight: var(--font-title-weight);
+  line-height: var(--font-title-line-height);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.icon-button {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: var(--space-10);
+  height: var(--space-10);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--color-ink);
+  cursor: pointer;
+  transition: background-color var(--motion-duration-quick) var(--motion-easing);
+}
+
+.icon-button:hover {
+  background: var(--color-surface-subtle);
+}
+
+/* ---- Sidebar ---- */
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: var(--space-sidebar-width);
+  padding: var(--space-2);
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  transition: width var(--motion-duration-calm) var(--motion-easing);
+}
+
+.shell[data-sidebar="collapsed"] .sidebar {
+  width: var(--space-sidebar-collapsed);
+}
+
+.sidebar-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--space-10);
+}
+
+.nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--space-10);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius);
+  color: var(--color-ink);
+  font-weight: var(--font-label-weight);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color var(--motion-duration-quick) var(--motion-easing);
+}
+
+.nav-link > svg {
+  flex: none;
+}
+
+.nav-link:hover {
+  background: var(--color-surface-subtle);
+}
+
+.nav-link[aria-current="page"] {
+  background: var(--color-surface-subtle);
+  box-shadow: inset 3px 0 0 var(--color-primary);
+}
+
+.shell[data-sidebar="collapsed"] .nav-link {
+  justify-content: center;
+  padding: 0;
+}
+
+/* Laptop: sidebar docked beside the content, sticky full height. */
+.shell[data-layout="docked"] .sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* Tablet: icon rail keeps its column; the expanded sheet overlays the content. */
+.shell[data-layout="rail"] {
+  grid-template-columns: var(--space-sidebar-collapsed) minmax(0, 1fr);
+}
+
+.shell[data-layout="rail"] .sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 20;
+}
+
+.shell[data-layout="rail"][data-overlay] .sidebar {
+  box-shadow: var(--elevation-overlay), var(--elevation-outline);
+}
+
+/* Phone: top bar with a menu button; the sidebar is a drawer under it. */
+.shell[data-layout="drawer"] {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: var(--topbar-height);
+  padding: 0 var(--space-gutter-mobile) 0 var(--space-1);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.shell[data-layout="drawer"] .sidebar {
+  position: fixed;
+  top: var(--topbar-height);
+  bottom: 0;
+  left: 0;
+  z-index: 20;
+  width: min(var(--space-sidebar-width), 85vw);
+  visibility: hidden;
+  transform: translateX(-100%);
+  /* Closing: stay visible until the slide-out ends. */
+  transition:
+    transform var(--motion-duration-calm) var(--motion-easing),
+    visibility 0s linear var(--motion-duration-calm);
+}
+
+.shell[data-layout="drawer"][data-overlay] .sidebar {
+  visibility: visible;
+  transform: none;
+  /* Opening: visible at once so focus can move into the drawer. */
+  transition:
+    transform var(--motion-duration-calm) var(--motion-easing),
+    visibility 0s;
+  box-shadow: var(--elevation-overlay), var(--elevation-outline);
+}
+
+/* Touch layouts: 44px targets. */
+.shell[data-layout="rail"] .icon-button,
+.shell[data-layout="drawer"] .icon-button,
+.shell[data-layout="rail"] .nav-link,
+.shell[data-layout="drawer"] .nav-link {
+  min-height: var(--space-touch-target);
+}
+
+.shell[data-layout="rail"] .icon-button,
+.shell[data-layout="drawer"] .icon-button {
+  width: var(--space-touch-target);
+  height: var(--space-touch-target);
+}
+
+.shell[data-layout="rail"] .sidebar {
+  padding: var(--space-1) calc((var(--space-sidebar-collapsed) - var(--space-touch-target)) / 2);
+}
+
+.shell[data-layout="rail"][data-overlay] .sidebar {
+  padding: var(--space-1) var(--space-2);
+}
+
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  background: var(--color-scrim);
+}
+
+/* ---- Content ---- */
+
+.content {
+  grid-column: -2 / -1;
+  min-width: 0;
+  padding: var(--space-8) var(--space-gutter-desktop);
+}
+
+.shell[data-layout="drawer"] .content {
+  padding: var(--space-6) var(--space-gutter-mobile);
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.page-lead {
+  max-width: var(--space-reading-measure);
+  color: var(--color-ink-muted);
+  font-family: var(--font-serif);
+  font-size: var(--font-explanation-size);
+  line-height: var(--font-explanation-line-height);
+}
+
+.shell[data-layout="drawer"] .page-lead {
+  font-size: var(--font-explanation-mobile-size);
+  line-height: var(--font-explanation-mobile-line-height);
+}
