@@ -1,0 +1,18 @@
+{
+  "name": "@solvely/shared",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Types generated from the API's OpenAPI schema. Regenerate with `npm run gen:api` from the repo root.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "gen:api": "node scripts/gen-api.mjs",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "openapi-typescript": "7.13.0",
+    "typescript": "5.9.3"
+  }
+}
