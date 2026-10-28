@@ -108,7 +108,7 @@ Learners can safely sign up and keep their work private.
 ### Story 1.1: Web app shell and API client
 As a Learner, I want to open the app and see a navigable, responsive shell, so that I can reach every feature from one place.
 **Acceptance Criteria:**
-**Given** the web app is built **When** I open `/` **Then** a shell with sidebar, "New lesson" action and content area renders on laptop, tablet and phone widths.
+**Given** the web app is built **When** I open `/` **Then** a shell with a collapsible sidebar and content area renders on laptop, tablet and phone widths (the "New lesson" action is added by Story 2.1 so no control exists without behaviour).
 **And** the SPA is a React 19 + TypeScript strict + Vite app in `apps/web` with lint, type-check, Vitest and build commands passing.
 **And** an API client generated from the OpenAPI schema is used and a dev proxy reaches `/api/v1/health/`.
 **And** the layout is operable by keyboard with visible focus.
@@ -142,6 +142,15 @@ As a Learner, I want to delete my account and all my data, so that I control my 
 **Given** I confirm deletion with my password **When** it completes **Then** my user and all owned records are removed in one transaction.
 **And** subsequent requests with my old session fail.
 **And** a test verifies no orphaned rows remain.
+
+### Story 1.7: Sign-up, sign-in and password reset screens
+As a Learner, I want screens to register, sign in and reset my password, so that I can use the accounts built in Stories 1.2 and 1.3 from the browser.
+**Acceptance Criteria:**
+**Given** the sign-up screen **Then** it collects email, password and the 18+ confirmation, shows server validation messages per field from the error envelope, and signs me in on success.
+**Given** the sign-in screen **Then** a failed attempt shows one generic message and throttling shows a retry notice.
+**Given** the reset screens **Then** request always shows the same confirmation, and the link (`uid`, `token`) opens a new-password form that reports an invalid or expired link clearly.
+**And** the app bootstraps the session through `/auth/me/`, handles CSRF via `/auth/csrf/`, redirects unauthenticated users to sign-in, and no tokens are stored in browser storage.
+**And** all screens meet the UX-DRs for forms, errors and focus management and are keyboard operable.
 
 ### Story 1.6: Theme preference and account settings
 As a Learner, I want light, dark or device-following theme and a settings page, so that the app is comfortable and I can manage my account.

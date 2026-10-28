@@ -14,3 +14,9 @@
 - source_spec: `_bmad-output/planning-artifacts/ux-designs/ux-Solvely.ai-2026-10-28/EXPERIENCE.md`
   summary: Lesson schema (Story 3.2) needs a per-Step text description and a completion field for the "I've got it" moment (UJ-2); confirm Excalidraw origin badges in Story 2.2
   evidence: gaps listed by the UX distill step.
+- source_spec: `_bmad-output/implementation-artifacts/spec-1-1-web-app-shell-and-api-client.md`
+  summary: Decide how the web client sends the account-deletion password: drf-spectacular emits no request body for DELETE, and some proxies drop DELETE bodies. Options: move to `POST /api/v1/auth/account/delete/` (recommended, robust, typed) or keep DELETE and hand-type the body. Decide in Story 1.6 (account settings UI).
+  evidence: generated `auth_account_destroy` has `requestBody?: never` although the view declares AccountDeleteSerializer.
+- source_spec: `_bmad-output/implementation-artifacts/spec-1-1-web-app-shell-and-api-client.md`
+  summary: Choose and add the accessible dialog/menu primitive (Radix UI was assumed) at the first dialog (Story 1.6 or 1.7); main bundle is 319 kB (101 kB gzip), mostly React Router 8.
+  evidence: shell has no dialogs yet; drawer uses its own focus handling.
