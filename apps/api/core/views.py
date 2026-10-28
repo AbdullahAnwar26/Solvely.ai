@@ -1,10 +1,18 @@
 from django.db import connection
-from drf_spectacular.utils import OpenApiResponse, extend_schema
+from drf_spectacular.utils import OpenApiResponse, extend_schema, inline_serializer
+from rest_framework import serializers
 from rest_framework.decorators import api_view, throttle_classes
 from rest_framework.response import Response
 
+_HEALTH = inline_serializer("Health", {"status": serializers.ChoiceField(choices=["ok"])})
+_READY = inline_serializer(
+    "Ready", {"status": serializers.ChoiceField(choices=["ready", "unavailable"])}
+)
 
-@extend_schema(responses={200: OpenApiResponse(description="Process is up.")})
+
+@extend_schema(
+    responses={200: OpenApiResponse(response=_HEALTH, description="Process is up.")}
+)
 @api_view(["GET"])
 @throttle_classes([])
 def health(request):
@@ -14,8 +22,8 @@ def health(request):
 
 @extend_schema(
     responses={
-        200: OpenApiResponse(description="Database reachable."),
-        503: OpenApiResponse(description="Database unavailable."),
+        200: OpenApiResponse(response=_READY, description="Database reachable."),
+        503: OpenApiResponse(response=_READY, description="Database unavailable."),
     }
 )
 @api_view(["GET"])
