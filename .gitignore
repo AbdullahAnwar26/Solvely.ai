@@ -1,0 +1,21 @@
+node_modules/
+dist/
+.venv/
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+*.sqlite3
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+coverage/
+playwright-report/
+test-results/
+staticfiles/
+
+# BMAD personal/generated files
+_bmad/config.user.toml
+_bmad/custom/*.user.toml
+_bmad/render/
