@@ -1,17 +1,45 @@
 import { lazy } from "react";
 import type { RouteObject } from "react-router";
+import { RedirectIfSignedIn, RequireAuth, SessionRoot, WaitForSession } from "../auth/guards";
 import { AppShell } from "./AppShell";
 
 // Route components are lazy-loaded so each page ships as its own chunk.
 const HomePage = lazy(() => import("../pages/HomePage"));
 const NotFoundPage = lazy(() => import("../pages/NotFoundPage"));
+const SignUpPage = lazy(() => import("../auth/SignUpPage"));
+const SignInPage = lazy(() => import("../auth/SignInPage"));
+const ForgotPasswordPage = lazy(() => import("../auth/ForgotPasswordPage"));
+const ResetPasswordPage = lazy(() => import("../auth/ResetPasswordPage"));
 
 export const routes: RouteObject[] = [
   {
-    element: <AppShell />,
+    // Session bootstrap (`GET /auth/me/`) wraps every route.
+    element: <SessionRoot />,
     children: [
-      { index: true, element: <HomePage /> },
-      { path: "*", element: <NotFoundPage /> },
+      {
+        element: <RedirectIfSignedIn />,
+        children: [
+          { path: "sign-up", element: <SignUpPage /> },
+          { path: "sign-in", element: <SignInPage /> },
+          { path: "forgot-password", element: <ForgotPasswordPage /> },
+        ],
+      },
+      {
+        element: <WaitForSession />,
+        children: [{ path: "reset-password", element: <ResetPasswordPage /> }],
+      },
+      {
+        element: <RequireAuth />,
+        children: [
+          {
+            element: <AppShell />,
+            children: [
+              { index: true, element: <HomePage /> },
+              { path: "*", element: <NotFoundPage /> },
+            ],
+          },
+        ],
+      },
     ],
   },
 ];
