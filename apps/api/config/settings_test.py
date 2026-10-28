@@ -7,3 +7,8 @@ from .settings import *  # noqa: E402, F403
 
 # Fast hasher keeps the auth tests quick; production uses Django's default PBKDF2.
 PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
+
+# Test-only owned model and routes proving the ownership foundation (Story 1.4).
+# Production settings and urls never include them.
+INSTALLED_APPS = [*INSTALLED_APPS, "tests.ownership_fixture"]  # noqa: F405
+ROOT_URLCONF = "tests.urls"
