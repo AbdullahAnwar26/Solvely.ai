@@ -10,6 +10,9 @@ LOGIN_EMAIL_RATE = "10/hour"
 # Password reset requests and confirmations allowed per client IP (each counted separately).
 RESET_RATE = "10/hour"
 
+# Account deletion attempts allowed per client IP and per signed-in user (each counted separately).
+ACCOUNT_DELETE_RATE = "10/hour"
+
 # Password reset links expire after this many seconds (Django PASSWORD_RESET_TIMEOUT).
 RESET_TIMEOUT_SECONDS = 60 * 60
 

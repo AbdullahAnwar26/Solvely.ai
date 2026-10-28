@@ -77,6 +77,10 @@ class LoginSerializer(serializers.Serializer):
         return normalize_email(value)
 
 
+class AccountDeleteSerializer(serializers.Serializer):
+    password = _password_field()
+
+
 class PasswordResetRequestSerializer(serializers.Serializer):
     email = serializers.EmailField(max_length=limits.EMAIL_MAX_LENGTH)
 

@@ -124,6 +124,8 @@ REST_FRAMEWORK = {
         "login_email": limits.LOGIN_EMAIL_RATE,
         "password_reset": limits.RESET_RATE,
         "password_reset_confirm": limits.RESET_RATE,
+        "account_delete": limits.ACCOUNT_DELETE_RATE,
+        "account_delete_user": limits.ACCOUNT_DELETE_RATE,
     },
     # 0 = throttle on REMOTE_ADDR only, so a spoofed X-Forwarded-For cannot dodge limits.
     # Set to the number of trusted reverse proxies in production.

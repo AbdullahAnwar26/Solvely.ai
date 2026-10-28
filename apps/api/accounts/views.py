@@ -6,7 +6,7 @@ from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.mail import EmailMessage
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
@@ -21,6 +21,7 @@ from core.errors import ApiError
 
 from .serializers import (
     EMAIL_TAKEN_MESSAGE,
+    AccountDeleteSerializer,
     LoginSerializer,
     PasswordResetConfirmSerializer,
     PasswordResetRequestSerializer,
@@ -29,6 +30,8 @@ from .serializers import (
     validate_new_password,
 )
 from .throttles import (
+    AccountDeleteRateThrottle,
+    AccountDeleteUserRateThrottle,
     LoginEmailRateThrottle,
     LoginRateThrottle,
     PasswordResetConfirmRateThrottle,
@@ -122,6 +125,36 @@ class MeView(APIView):
 
     def get(self, request):
         return Response(RegisteredUserSerializer(request.user).data)
+
+
+class IncorrectPassword(InvalidCredentials):
+    """Same `invalid_credentials` code as sign-in, worded for a signed-in user."""
+
+    default_detail = "The password is incorrect."
+
+
+@method_decorator(csrf_protect, name="dispatch")
+class AccountDeleteView(APIView):
+    """Permanently deletes the signed-in user and everything they own (FR-18)."""
+
+    permission_classes = [IsAuthenticated]
+    throttle_classes = [AccountDeleteRateThrottle, AccountDeleteUserRateThrottle]
+
+    def delete(self, request):
+        serializer = AccountDeleteSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = request.user
+        if not user.check_password(serializer.validated_data["password"]):
+            raise IncorrectPassword()
+
+        # Profile and every OwnedModel row reference the user with on_delete=CASCADE
+        # (guarded by tests), so one delete removes them all, all or nothing.
+        with transaction.atomic():
+            user.delete()
+        # flush(): deletes this session row server-side and clears the cookie. Other
+        # sessions of the user no longer resolve to an account, so they are anonymous.
+        logout(request._request)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 def _reset_candidate(email):

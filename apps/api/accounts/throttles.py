@@ -28,6 +28,21 @@ class PasswordResetConfirmRateThrottle(_PerIPThrottle):
     scope = "password_reset_confirm"
 
 
+class AccountDeleteRateThrottle(_PerIPThrottle):
+    scope = "account_delete"
+
+
+class AccountDeleteUserRateThrottle(SimpleRateThrottle):
+    """Account deletion attempts per signed-in user, across all IPs."""
+
+    scope = "account_delete_user"
+
+    def get_cache_key(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return None
+        return self.cache_format % {"scope": self.scope, "ident": request.user.pk}
+
+
 class LoginEmailRateThrottle(SimpleRateThrottle):
     """Sign-in attempts per submitted email (case-insensitive), across all IPs."""
 
