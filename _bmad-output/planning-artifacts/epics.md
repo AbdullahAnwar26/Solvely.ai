@@ -5,13 +5,15 @@ inputDocuments:
   - _bmad-output/planning-artifacts/prds/prd-Solvely.ai-2026-10-27/prd.md
   - _bmad-output/planning-artifacts/architecture/architecture-Solvely.ai-2026-10-27/ARCHITECTURE-SPINE.md
   - _bmad-output/planning-artifacts/briefs/brief-Solvely.ai-2026-10-27/brief.md
+  - _bmad-output/planning-artifacts/ux-designs/ux-Solvely.ai-2026-10-28/DESIGN.md
+  - _bmad-output/planning-artifacts/ux-designs/ux-Solvely.ai-2026-10-28/EXPERIENCE.md
 ---
 
 # Whiteboard Tutor - Epic Breakdown
 
 ## Overview
 
-Epics and stories for Whiteboard Tutor v1 (adults 18+, free daily Lesson Allowance), decomposed from the PRD and the architecture spine (AD-1 to AD-12). No UX design contract exists yet (`bmad-ux` not run); UX requirements below come from the PRD and are refined when UX is produced. The backend foundation already exists in `apps/api` (Django 6.1.2, DRF, health/ready, request-ID middleware, pytest on PostgreSQL); the web app does not exist yet.
+Epics and stories for Whiteboard Tutor v1 (adults 18+, free daily Lesson Allowance), decomposed from the PRD and the architecture spine (AD-1 to AD-12). The UX contract (DESIGN.md + EXPERIENCE.md, final 2026-10-29) lives in `ux-designs/ux-Solvely.ai-2026-10-28/`; its numbered UX-DR1..UX-DR28 are binding acceptance input for every UI story. The backend foundation already exists in `apps/api` (Django 6.1.2, DRF, health/ready, request-ID middleware, pytest on PostgreSQL); the web app does not exist yet.
 
 ## Requirements Inventory
 
@@ -63,7 +65,7 @@ Epics and stories for Whiteboard Tutor v1 (adults 18+, free daily Lesson Allowan
 
 ### UX Design Requirements
 
-None yet (no UX contract). Epic 7 includes a story to reconcile with the UX contract once `bmad-ux` is run.
+UX-DR1 to UX-DR28 are defined in `ux-designs/ux-Solvely.ai-2026-10-28/EXPERIENCE.md` (section "UX Design Requirements") with tokens in DESIGN.md. Each UI story implements the UX-DRs for its surfaces; Story 7.2 verifies them end to end. Open UX gaps: per-Step text description in the lesson schema (Story 3.2), a completion field for the "I've got it" moment (Stories 3.2 and 4.2), origin badges on Excalidraw elements to confirm in Story 2.2.
 
 ### FR Coverage Map
 
@@ -140,6 +142,15 @@ As a Learner, I want to delete my account and all my data, so that I control my 
 **Given** I confirm deletion with my password **When** it completes **Then** my user and all owned records are removed in one transaction.
 **And** subsequent requests with my old session fail.
 **And** a test verifies no orphaned rows remain.
+
+### Story 1.6: Theme preference and account settings
+As a Learner, I want light, dark or device-following theme and a settings page, so that the app is comfortable and I can manage my account.
+**Acceptance Criteria:**
+**Given** the app **Then** it follows the device light/dark setting by default and offers a manual toggle (system, light, dark) whose choice persists per Learner.
+**And** all DESIGN.md light and dark tokens are applied through CSS variables and pass the documented contrast ratios.
+**And** the settings page offers sign out and account deletion (Story 1.5) with the password confirmation flow.
+**And** reduced-motion preference is honoured.
+
 
 ## Epic 2: Editable Whiteboard Lessons
 
@@ -253,6 +264,14 @@ As a Learner, I want clear equations and code, and to know what was actually ver
 **Given** arithmetic or algebra that the deterministic evaluator confirms **Then** it shows a verified marker; unconfirmed claims show none.
 **And** evaluator mismatches with the model result are flagged, not hidden.
 
+### Story 4.5: Keyboard shortcuts dialog
+As a Learner, I want a discoverable list of keyboard shortcuts, so that I can drive the workspace without a mouse.
+**Acceptance Criteria:**
+**Given** the workspace **When** I press `?` or open Help **Then** a dialog lists shortcuts for step controls, ask, undo/redo, panel focus and navigation, as defined in EXPERIENCE.md.
+**And** the dialog is focus-trapped, closable with Escape, and announced to screen readers.
+**And** shortcuts do not fire while typing in text fields.
+
+
 ## Epic 5: Practice, Notes and Summaries
 
 ### Story 5.1: Practice questions and attempts
@@ -326,4 +345,4 @@ As a Learner, I want to know how my data is used, and the product must prove its
 - Every FR1 to FR18 is covered (see map). NFRs are verified in Epic 7 and enforced inside stories.
 - Stories are ordered so none depends on a later story in its epic; tables are created by the story that needs them.
 - No starter template is mandated by the architecture; Story 1.1 scaffolds the web app, Story 3.1 is the first AI story.
-- Open: no UX contract yet; Practice, summary and generation stories each consume allowance; Check Understanding mode is deferred.
+- Open: Practice, summary and generation stories each consume allowance; Check Understanding mode is deferred.
