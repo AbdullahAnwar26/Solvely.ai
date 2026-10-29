@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-    "/api/v1/auth/account/": {
+    "/api/v1/auth/account/delete/": {
         parameters: {
             query?: never;
             header?: never;
@@ -13,9 +13,9 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post?: never;
         /** @description Permanently deletes the signed-in user and everything they own (FR-18). */
-        delete: operations["auth_account_destroy"];
+        post: operations["auth_account_delete_create"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -118,6 +118,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/auth/preferences/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** @description Updates the signed-in Learner's preferences; the profile is always request.user's. */
+        patch: operations["auth_preferences_partial_update"];
+        trace?: never;
+    };
     "/api/v1/auth/register/": {
         parameters: {
             query?: never;
@@ -194,6 +211,9 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        AccountDelete: {
+            password: string;
+        };
         Health: {
             status: components["schemas"]["HealthStatusEnum"];
         };
@@ -214,6 +234,12 @@ export interface components {
         PasswordResetRequest: {
             /** Format: email */
             email: string;
+        };
+        PatchedPreferences: {
+            theme_preference?: components["schemas"]["ThemePreferenceEnum"];
+        };
+        Preferences: {
+            theme_preference: components["schemas"]["ThemePreferenceEnum"];
         };
         Ready: {
             status: components["schemas"]["ReadyStatusEnum"];
@@ -236,7 +262,15 @@ export interface components {
             /** Format: email */
             email: string;
             id: number;
+            theme_preference: components["schemas"]["ThemePreferenceEnum"];
         };
+        /**
+         * @description * `system` - System
+         *     * `light` - Light
+         *     * `dark` - Dark
+         * @enum {string}
+         */
+        ThemePreferenceEnum: "system" | "light" | "dark";
     };
     responses: never;
     parameters: never;
@@ -246,14 +280,20 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    auth_account_destroy: {
+    auth_account_delete_create: {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AccountDelete"];
+                "application/x-www-form-urlencoded": components["schemas"]["AccountDelete"];
+                "multipart/form-data": components["schemas"]["AccountDelete"];
+            };
+        };
         responses: {
             /** @description No content. */
             204: {
@@ -462,6 +502,45 @@ export interface operations {
             };
             /** @description Error envelope (see core.errors). */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    auth_preferences_partial_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PatchedPreferences"];
+                "application/x-www-form-urlencoded": components["schemas"]["PatchedPreferences"];
+                "multipart/form-data": components["schemas"]["PatchedPreferences"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Preferences"];
+                };
+            };
+            /** @description Error envelope (see core.errors). */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error envelope (see core.errors). */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
