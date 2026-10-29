@@ -26,6 +26,7 @@ from .serializers import (
     LoginSerializer,
     PasswordResetConfirmSerializer,
     PasswordResetRequestSerializer,
+    PreferencesSerializer,
     RegisteredUserSerializer,
     RegisterSerializer,
     validate_new_password,
@@ -144,6 +145,25 @@ class MeView(APIView):
         return Response(RegisteredUserSerializer(request.user).data)
 
 
+@method_decorator(csrf_protect, name="dispatch")
+class PreferencesView(APIView):
+    """Updates the signed-in Learner's preferences; the profile is always request.user's."""
+
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        request=PreferencesSerializer,
+        responses={200: PreferencesSerializer, 400: ERROR, 403: ERROR},
+    )
+    def patch(self, request):
+        serializer = PreferencesSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        profile = request.user.profile
+        profile.theme_preference = serializer.validated_data["theme_preference"]
+        profile.save(update_fields=["theme_preference"])
+        return Response(PreferencesSerializer(profile).data)
+
+
 class IncorrectPassword(InvalidCredentials):
     """Same `invalid_credentials` code as sign-in, worded for a signed-in user."""
 
@@ -161,7 +181,7 @@ class AccountDeleteView(APIView):
         request=AccountDeleteSerializer,
         responses={204: EMPTY_204, 400: ERROR, 403: ERROR, 429: ERROR},
     )
-    def delete(self, request):
+    def post(self, request):
         serializer = AccountDeleteSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = request.user

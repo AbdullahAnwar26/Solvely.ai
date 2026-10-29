@@ -106,3 +106,10 @@ class RegisteredUserSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     email = serializers.EmailField()
     adult_confirmed_at = serializers.DateTimeField(source="profile.adult_confirmed_at")
+    theme_preference = serializers.ChoiceField(
+        choices=Profile.ThemePreference.choices, source="profile.theme_preference"
+    )
+
+
+class PreferencesSerializer(serializers.Serializer):
+    theme_preference = serializers.ChoiceField(choices=Profile.ThemePreference.choices)
