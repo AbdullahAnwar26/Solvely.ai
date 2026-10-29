@@ -14,10 +14,14 @@ export type SessionContextValue = {
   state: SessionState;
   /** True after the Learner chose Sign out, so the guard does not remember a return route. */
   signedOutByUser: boolean;
+  /** Set after the account was deleted, so the sign-in page can say so. */
+  accountDeleted: boolean;
   /** Record a successful sign-up or sign-in. */
   signIn: (user: SessionUser) => void;
   /** Calls the logout endpoint, then clears session state. Rejects (staying signed in) on failure. */
   signOut: () => Promise<void>;
+  /** The server ended the session by deleting the account; clears state without a logout call. */
+  endSessionAfterDeletion: () => void;
   /** Re-run the session bootstrap after a failure. */
   retry: () => void;
 };

@@ -1,11 +1,15 @@
 import { Suspense, type ReactNode } from "react";
 import { Navigate, Outlet, useLocation } from "react-router";
 import { useSession } from "./SessionContext";
+import { ThemeProvider } from "../theme/ThemeProvider";
 import { SessionProvider } from "./SessionProvider";
 import "./auth.css";
 
 /** A Learner is only sent back to an in-app path, never to an auth route. */
 const AUTH_PATHS = ["/sign-in", "/sign-up", "/forgot-password", "/reset-password"];
+
+/** Router-state notice shown on /sign-in after the Learner deleted their account. */
+export const ACCOUNT_DELETED_NOTICE = "account-deleted";
 
 type ReturnTo = { pathname: string; search: string; hash: string };
 
@@ -55,15 +59,17 @@ function SessionGate({ children }: { children: (signedIn: boolean) => ReactNode 
 export function SessionRoot() {
   return (
     <SessionProvider>
-      <Suspense
-        fallback={
-          <p role="status" className="visually-hidden">
-            Loading
-          </p>
-        }
-      >
-        <Outlet />
-      </Suspense>
+      <ThemeProvider>
+        <Suspense
+          fallback={
+            <p role="status" className="visually-hidden">
+              Loading
+            </p>
+          }
+        >
+          <Outlet />
+        </Suspense>
+      </ThemeProvider>
     </SessionProvider>
   );
 }
@@ -71,7 +77,7 @@ export function SessionRoot() {
 /** App routes: signed-out visitors go to /sign-in and return to the requested route afterwards. */
 export function RequireAuth() {
   const location = useLocation();
-  const { signedOutByUser } = useSession();
+  const { signedOutByUser, accountDeleted } = useSession();
   const from = { pathname: location.pathname, search: location.search, hash: location.hash };
   return (
     <SessionGate>
@@ -79,7 +85,7 @@ export function RequireAuth() {
         signedIn ? (
           <Outlet />
         ) : (
-          <Navigate to="/sign-in" replace state={signedOutByUser ? undefined : { from }} />
+          <Navigate to="/sign-in" replace state={signedOutByUser ? (accountDeleted ? { notice: ACCOUNT_DELETED_NOTICE } : undefined) : { from }} />
         )
       }
     </SessionGate>

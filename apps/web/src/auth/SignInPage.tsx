@@ -5,6 +5,7 @@ import { AuthLayout } from "./AuthLayout";
 import { login } from "./authApi";
 import { errorsFromApi, hasErrors, NO_ERRORS, type FormErrors } from "./formErrors";
 import { FormSummary, SubmitButton, TextField } from "./FormParts";
+import { ACCOUNT_DELETED_NOTICE } from "./guards";
 import { useSession } from "./SessionContext";
 
 const INVALID_CREDENTIALS_MESSAGE = "That email and password don't match. Check them and try again.";
@@ -14,6 +15,10 @@ export default function SignInPage() {
   const ids = { email: `${baseId}-email`, password: `${baseId}-password` };
   const { signIn } = useSession();
   const location = useLocation();
+  const notice =
+    typeof location.state === "object" && location.state !== null && "notice" in location.state
+      ? (location.state as { notice: unknown }).notice
+      : null;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<FormErrors>(NO_ERRORS);
@@ -52,6 +57,11 @@ export default function SignInPage() {
 
   return (
     <AuthLayout title="Sign in">
+      {notice === ACCOUNT_DELETED_NOTICE && (
+        <p role="status" className="auth-notice">
+          Your account and its data have been deleted.
+        </p>
+      )}
       <form onSubmit={onSubmit} noValidate>
         <FormSummary
           errors={errors}

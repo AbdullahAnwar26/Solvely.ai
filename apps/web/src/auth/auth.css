@@ -162,3 +162,11 @@
     padding: var(--space-5);
   }
 }
+
+.auth-notice {
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-success);
+  border-left-width: 4px;
+  border-radius: var(--radius);
+}

@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="light dark" />
     <meta name="description" content="Whiteboard Tutor: a calm, whiteboard-first study room." />
+    <script>
+      // Apply the saved theme hint before first paint (no flash). Light/dark only; absent means system.
+      try {
+        var t = window.localStorage.getItem("wt.theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+      } catch (e) {}
+    </script>
     <title>Whiteboard Tutor</title>
   </head>
   <body>

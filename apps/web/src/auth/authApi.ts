@@ -4,6 +4,7 @@
  * Nothing here touches browser storage: the session lives in an HttpOnly cookie.
  */
 import { api, ApiError, CSRF_COOKIE_NAME, readCookie } from "../api/client";
+import type { ThemePreference } from "../theme/themeStorage";
 import type { SessionUser } from "./SessionContext";
 
 export const NETWORK_MESSAGE = "Could not reach the server. Check your connection and retry.";
@@ -50,6 +51,16 @@ export async function confirmPasswordReset(input: {
 }): Promise<void> {
   await ensureCsrfCookie();
   await api.post("/api/v1/auth/password-reset/confirm/", { body: input });
+}
+
+export async function updateThemePreference(theme_preference: ThemePreference): Promise<void> {
+  await ensureCsrfCookie();
+  await api.patch("/api/v1/auth/preferences/", { body: { theme_preference } });
+}
+
+export async function deleteAccount(password: string): Promise<void> {
+  await ensureCsrfCookie();
+  await api.post("/api/v1/auth/account/delete/", { body: { password } });
 }
 
 /** Message for failures that every form handles the same way (network, throttle, unknown). */

@@ -10,6 +10,7 @@ import { SessionContext, type SessionContextValue, type SessionState, type Sessi
 export function SessionProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<SessionState>({ status: "loading" });
   const [signedOutByUser, setSignedOutByUser] = useState(false);
+  const [accountDeleted, setAccountDeleted] = useState(false);
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
@@ -34,6 +35,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const signIn = useCallback((user: SessionUser) => {
     setSignedOutByUser(false);
+    setAccountDeleted(false);
     setState({ status: "signedIn", user });
   }, []);
 
@@ -43,14 +45,20 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setState({ status: "signedOut" });
   }, []);
 
+  const endSessionAfterDeletion = useCallback(() => {
+    setSignedOutByUser(true);
+    setAccountDeleted(true);
+    setState({ status: "signedOut" });
+  }, []);
+
   const retry = useCallback(() => {
     setState({ status: "loading" });
     setAttempt((n) => n + 1);
   }, []);
 
   const value = useMemo<SessionContextValue>(
-    () => ({ state, signedOutByUser, signIn, signOut, retry }),
-    [state, signedOutByUser, signIn, signOut, retry],
+    () => ({ state, signedOutByUser, accountDeleted, signIn, signOut, endSessionAfterDeletion, retry }),
+    [state, signedOutByUser, accountDeleted, signIn, signOut, endSessionAfterDeletion, retry],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
