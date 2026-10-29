@@ -99,6 +99,8 @@ describe("AppShell keyboard", () => {
     await user.tab();
     expect(within(screen.getByRole("navigation", { name: "Main" })).getByRole("link", { name: "Home" })).toHaveFocus();
     await user.tab();
+    expect(within(screen.getByRole("navigation", { name: "Main" })).getByRole("link", { name: "Settings" })).toHaveFocus();
+    await user.tab();
     expect(within(screen.getByRole("navigation", { name: "Main" })).getByRole("button", { name: "Sign out" })).toHaveFocus();
     await user.tab();
     expect(within(screen.getByRole("main")).getByRole("link", { name: "Go to home" })).toHaveFocus();

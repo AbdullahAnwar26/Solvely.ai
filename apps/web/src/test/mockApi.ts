@@ -1,11 +1,17 @@
 import { vi } from "vitest";
+import type { ThemePreference } from "../theme/themeStorage";
 
 export type MockReply = { status?: number; body?: unknown } | Error;
 export type MockHandler = (request: { body: unknown; headers: Headers }) => MockReply | Promise<MockReply>;
 
 export type RecordedCall = { method: string; path: string; body: unknown; headers: Headers };
 
-export const USER = { id: 1, email: "maya@example.com", adult_confirmed_at: "2026-10-29T10:00:00Z" };
+export const USER = {
+  id: 1,
+  email: "maya@example.com",
+  adult_confirmed_at: "2026-10-29T10:00:00Z",
+  theme_preference: "system" as ThemePreference,
+};
 
 export function envelope(
   code: string,

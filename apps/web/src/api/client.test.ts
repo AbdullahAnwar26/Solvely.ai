@@ -132,7 +132,7 @@ describe("api client: CSRF", () => {
   it("still sends the request without the header when the cookie is missing", async () => {
     const fetchMock = mockFetch(new Response(null, { status: 204 }));
 
-    await api.delete("/api/v1/auth/account/");
+    await api.post("/api/v1/auth/logout/");
 
     const { init, headers } = sentHeaders(fetchMock);
     expect(fetchMock).toHaveBeenCalledTimes(1);

@@ -411,8 +411,14 @@ describe("browser storage", () => {
     await user.click(screen.getByRole("button", { name: "Sign in" }));
     await screen.findByRole("heading", { level: 1, name: "Whiteboard Tutor" });
 
-    expect(setItem).not.toHaveBeenCalled();
-    expect(window.localStorage).toHaveLength(0);
+    // The only allowed write is the non-sensitive theme hint: key wt.theme, value light|dark|system.
+    for (const [key, value] of setItem.mock.calls) {
+      expect(key).toBe("wt.theme");
+      expect(["light", "dark", "system"]).toContain(value);
+    }
+    const keys = Array.from({ length: window.localStorage.length }, (_, i) => window.localStorage.key(i));
+    expect(keys.every((k) => k === "wt.theme")).toBe(true);
+    expect(["light", "dark", "system", null]).toContain(window.localStorage.getItem("wt.theme"));
     expect(window.sessionStorage).toHaveLength(0);
   });
 });
