@@ -2,11 +2,14 @@ import { Suspense, useEffect, useRef, useState, type MouseEvent } from "react";
 import { NavLink, Outlet } from "react-router";
 import "./AppShell.css";
 import { useSession } from "../auth/SessionContext";
-import { CloseIcon, HomeIcon, MenuIcon, SidebarIcon, SignOutIcon } from "./icons";
+import { CloseIcon, HomeIcon, MenuIcon, SettingsIcon, SidebarIcon, SignOutIcon } from "./icons";
 import { useLayoutMode, type LayoutMode } from "./layoutMode";
 import { readSidebarCollapsed, writeSidebarCollapsed } from "./sidebarPreference";
 
-const NAV_ITEMS = [{ to: "/", label: "Home", Icon: HomeIcon, end: true }] as const;
+const NAV_ITEMS = [
+  { to: "/", label: "Home", Icon: HomeIcon, end: true },
+  { to: "/settings", label: "Settings", Icon: SettingsIcon, end: false },
+] as const;
 
 type SidebarState = "expanded" | "collapsed" | "hidden";
 
