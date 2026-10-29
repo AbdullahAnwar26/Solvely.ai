@@ -20,3 +20,6 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-1-1-web-app-shell-and-api-client.md`
   summary: Choose and add the accessible dialog/menu primitive (Radix UI was assumed) at the first dialog (Story 1.6 or 1.7); main bundle is 319 kB (101 kB gzip), mostly React Router 8.
   evidence: shell has no dialogs yet; drawer uses its own focus handling.
+- source_spec: `_bmad-output/implementation-artifacts/spec-1-6-theme-and-account-settings.md`
+  summary: Add a request timeout (AbortController) and a visible retry state to the web API client so a stalled request cannot leave a form stuck on a busy state forever
+  evidence: `apps/web/src/api/client.ts` has no timeout; a live run once hung on "Signing in…" (cause unproven, likely a test-script artifact).
