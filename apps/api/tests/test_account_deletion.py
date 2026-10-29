@@ -22,7 +22,8 @@ from tests.ownership_fixture.models import Note
 from .test_auth import ME_URL, make_user, signed_in_client
 from .test_register import STRONG_PASSWORD, assert_envelope, make_csrf_client
 
-ACCOUNT_URL = "/api/v1/auth/account/"
+ACCOUNT_URL = "/api/v1/auth/account/delete/"
+OLD_ACCOUNT_URL = "/api/v1/auth/account/"
 EMAIL_A = "alice@example.com"
 EMAIL_B = "bob@example.com"
 WRONG_PASSWORD = "not-my-password-123"
@@ -38,7 +39,7 @@ def delete_account(client, data=None, csrf=True, **extra):
     headers = {"X-CSRFToken": cookie.value} if csrf and cookie else {}
     if data is None:
         data = {"password": STRONG_PASSWORD}
-    return client.delete(
+    return client.post(
         ACCOUNT_URL, data, content_type="application/json", headers=headers, **extra
     )
 
@@ -139,6 +140,24 @@ def test_delete_ok_removes_everything_and_ends_session(client_a, user_a):
     assert_envelope(other_device.get(ME_URL), 403, "not_authenticated")
 
 
+def test_old_delete_route_is_gone(client_a, user_a):
+    give_rows(user_a)
+    cookie = client_a.cookies[settings.CSRF_COOKIE_NAME].value
+    response = client_a.delete(
+        OLD_ACCOUNT_URL,
+        {"password": STRONG_PASSWORD},
+        content_type="application/json",
+        headers={"X-CSRFToken": cookie},
+    )
+    assert response.status_code in (404, 405)
+    assert_account_intact(user_a)
+
+
+def test_delete_route_rejects_other_methods(client_a, user_a):
+    assert client_a.get(ACCOUNT_URL).status_code == 405
+    assert_account_intact(user_a, notes=0)
+
+
 def test_wrong_password_deletes_nothing(client_a, user_a):
     give_rows(user_a)
     response = delete_account(client_a, {"password": WRONG_PASSWORD})
@@ -172,7 +191,7 @@ def test_no_csrf_rejected(client_a, user_a):
 
 
 def test_bad_csrf_token_rejected(client_a, user_a):
-    response = client_a.delete(
+    response = client_a.post(
         ACCOUNT_URL,
         {"password": STRONG_PASSWORD},
         content_type="application/json",

@@ -64,7 +64,7 @@ def test_happy_path_creates_user_profile_and_session(csrf_client):
 
     assert response.status_code == 201
     body = response.json()
-    assert set(body) == {"id", "email", "adult_confirmed_at"}
+    assert set(body) == {"id", "email", "adult_confirmed_at", "theme_preference"}
     assert body["email"] == "learner@example.com"
 
     user = User.objects.get(pk=body["id"])

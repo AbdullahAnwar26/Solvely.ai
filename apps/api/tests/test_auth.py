@@ -102,7 +102,7 @@ def test_login_ok_any_case(client, user, email):
 
     assert response.status_code == 200
     body = response.json()
-    assert set(body) == {"id", "email", "adult_confirmed_at"}
+    assert set(body) == {"id", "email", "adult_confirmed_at", "theme_preference"}
     assert body["id"] == user.pk
     assert body["email"] == EMAIL
     assert datetime.fromisoformat(body["adult_confirmed_at"]) == user.profile.adult_confirmed_at
