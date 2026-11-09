@@ -15,6 +15,8 @@ from django.apps import apps
 
 from core.ownership import OwnedManager, OwnedModel
 
+ALL_ACTIONS = frozenset({"list", "retrieve", "create", "update", "delete"})
+
 
 @dataclass(frozen=True)
 class OwnedEndpoint:
@@ -26,6 +28,8 @@ class OwnedEndpoint:
     # Valid POST body (without `owner`) and a valid PATCH/PUT body.
     create_payload: dict = field(default_factory=dict)
     update_payload: dict = field(default_factory=dict)
+    # Actions the endpoint serves; checks for other actions are skipped.
+    actions: frozenset = ALL_ACTIONS
 
     @property
     def name(self):
@@ -38,7 +42,12 @@ class OwnedEndpoint:
 _REGISTRY: dict[type, OwnedEndpoint] = {}
 
 
-def register_owned_endpoint(model, url, make, create_payload=None, update_payload=None):
+def register_owned_endpoint(
+    model, url, make, create_payload=None, update_payload=None, actions=ALL_ACTIONS
+):
+    unknown = set(actions) - ALL_ACTIONS
+    if unknown:
+        raise ValueError(f"Unknown actions: {sorted(unknown)}")
     if model in _REGISTRY:
         raise ValueError(f"{model._meta.label} is already registered.")
     endpoint = OwnedEndpoint(
@@ -47,6 +56,7 @@ def register_owned_endpoint(model, url, make, create_payload=None, update_payloa
         make=make,
         create_payload=dict(create_payload or {}),
         update_payload=dict(update_payload or {}),
+        actions=frozenset(actions),
     )
     _REGISTRY[model] = endpoint
     return endpoint
@@ -100,4 +110,17 @@ def _register_fixture_endpoints():
     )
 
 
+def _register_lessons_endpoint():
+    from lessons.models import Lesson
+
+    register_owned_endpoint(
+        Lesson,
+        "/api/v1/lessons/",
+        make=lambda owner: Lesson.objects.create(owner=owner, title="private lesson"),
+        create_payload={"title": "new lesson"},
+        actions={"list", "retrieve", "create"},
+    )
+
+
 _register_fixture_endpoints()
+_register_lessons_endpoint()

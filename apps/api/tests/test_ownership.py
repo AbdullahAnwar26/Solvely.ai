@@ -27,8 +27,10 @@ EMAIL_B = "bob@example.com"
 ENDPOINTS = registered_endpoints()
 
 
-def endpoint_params():
-    return pytest.mark.parametrize("endpoint", ENDPOINTS, ids=[e.name for e in ENDPOINTS])
+def endpoint_params(*actions):
+    """Parametrize over registered endpoints that serve every one of `actions`."""
+    chosen = [e for e in ENDPOINTS if set(actions) <= e.actions]
+    return pytest.mark.parametrize("endpoint", chosen, ids=[e.name for e in chosen])
 
 
 @pytest.fixture
@@ -103,12 +105,12 @@ def test_deleting_user_cascades_only_their_rows(user_a, user_b):
 
 # --- Shared isolation checks over every registered endpoint ------------------------------
 
-@endpoint_params()
+@endpoint_params("list")
 def test_list_anonymous_rejected(endpoint):
     assert_envelope(make_csrf_client().get(endpoint.url), 403, "not_authenticated")
 
 
-@endpoint_params()
+@endpoint_params("list")
 def test_list_returns_only_own_rows_paginated(endpoint, client_a, user_a, user_b):
     own = {endpoint.make(user_a).pk for _ in range(2)}
     endpoint.make(user_b)
@@ -116,19 +118,19 @@ def test_list_returns_only_own_rows_paginated(endpoint, client_a, user_a, user_b
     assert response.status_code == 200
     body = response.json()
     assert body["count"] == 2
-    assert {row["id"] for row in body["results"]} == own
+    assert {str(row["id"]) for row in body["results"]} == {str(pk) for pk in own}
     assert all("owner" not in row for row in body["results"])
 
 
-@endpoint_params()
+@endpoint_params("retrieve")
 def test_retrieve_own_row(endpoint, client_a, user_a):
     row = endpoint.make(user_a)
     response = client_a.get(endpoint.detail_url(row.pk))
     assert response.status_code == 200
-    assert response.json()["id"] == row.pk
+    assert str(response.json()["id"]) == str(row.pk)
 
 
-@endpoint_params()
+@endpoint_params("retrieve")
 def test_retrieve_foreign_is_404_same_as_missing(endpoint, client_a, user_b):
     foreign = endpoint.make(user_b)
     foreign_response = client_a.get(endpoint.detail_url(foreign.pk))
@@ -138,7 +140,7 @@ def test_retrieve_foreign_is_404_same_as_missing(endpoint, client_a, user_b):
     assert without_request_id(foreign_response) == without_request_id(missing_response)
 
 
-@endpoint_params()
+@endpoint_params("update")
 @pytest.mark.parametrize("method", ["put", "patch"])
 def test_update_foreign_is_404_and_unchanged(endpoint, method, client_a, user_b):
     foreign = endpoint.make(user_b)
@@ -148,14 +150,14 @@ def test_update_foreign_is_404_and_unchanged(endpoint, method, client_a, user_b)
     assert endpoint.model.objects.filter(pk=foreign.pk).values().get() == before
 
 
-@endpoint_params()
+@endpoint_params("update")
 def test_update_missing_is_404(endpoint, client_a, user_b):
     pk = missing_pk(endpoint, user_b)
     response = send(client_a, "patch", endpoint.detail_url(pk), endpoint.update_payload)
     assert_envelope(response, 404, "not_found")
 
 
-@endpoint_params()
+@endpoint_params("delete")
 def test_delete_foreign_is_404_and_row_kept(endpoint, client_a, user_b):
     foreign = endpoint.make(user_b)
     response = send(client_a, "delete", endpoint.detail_url(foreign.pk))
@@ -163,7 +165,7 @@ def test_delete_foreign_is_404_and_row_kept(endpoint, client_a, user_b):
     assert endpoint.model.objects.filter(pk=foreign.pk).exists()
 
 
-@endpoint_params()
+@endpoint_params("delete")
 def test_delete_own_row(endpoint, client_a, user_a):
     row = endpoint.make(user_a)
     response = send(client_a, "delete", endpoint.detail_url(row.pk))
@@ -171,7 +173,7 @@ def test_delete_own_row(endpoint, client_a, user_a):
     assert not endpoint.model.objects.filter(pk=row.pk).exists()
 
 
-@endpoint_params()
+@endpoint_params("create")
 def test_create_ignores_client_owner(endpoint, client_a, user_a, user_b):
     payload = {**endpoint.create_payload, "owner": user_b.pk}
     response = send(client_a, "post", endpoint.url, payload)
@@ -180,7 +182,7 @@ def test_create_ignores_client_owner(endpoint, client_a, user_a, user_b):
     assert row.owner_id == user_a.pk
 
 
-@endpoint_params()
+@endpoint_params("update")
 def test_update_cannot_change_owner(endpoint, client_a, user_a, user_b):
     row = endpoint.make(user_a)
     payload = {**endpoint.update_payload, "owner": user_b.pk}
