@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "core",
     "accounts",
+    "lessons",
 ]
 
 MIDDLEWARE = [
@@ -126,6 +127,7 @@ REST_FRAMEWORK = {
         "password_reset_confirm": limits.RESET_RATE,
         "account_delete": limits.ACCOUNT_DELETE_RATE,
         "account_delete_user": limits.ACCOUNT_DELETE_RATE,
+        "lesson_create": limits.LESSON_CREATE_RATE,
     },
     # 0 = throttle on REMOTE_ADDR only, so a spoofed X-Forwarded-For cannot dodge limits.
     # Set to the number of trusted reverse proxies in production.

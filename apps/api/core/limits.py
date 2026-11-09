@@ -22,3 +22,9 @@ PASSWORD_MAX_LENGTH = 128
 
 # Email doubles as the username, so it must fit Django's username column.
 EMAIL_MAX_LENGTH = 150
+
+# Lessons created per signed-in user (DRF rate string).
+LESSON_CREATE_RATE = "60/hour"
+
+# Lesson title length (characters).
+LESSON_TITLE_MAX_LENGTH = 120
