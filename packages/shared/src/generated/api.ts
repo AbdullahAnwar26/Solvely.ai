@@ -168,6 +168,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/lessons/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List my lessons, newest first
+         * @description Create, retrieve and list the caller's own Lessons. No update or delete in this story.
+         */
+        get: operations["lessons_list"];
+        put?: never;
+        /**
+         * Create a lesson with an empty Board
+         * @description Create, retrieve and list the caller's own Lessons. No update or delete in this story.
+         */
+        post: operations["lessons_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/lessons/{id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get one of my lessons
+         * @description Create, retrieve and list the caller's own Lessons. No update or delete in this story.
+         */
+        get: operations["lessons_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/ready/": {
         parameters: {
             query?: never;
@@ -222,9 +266,38 @@ export interface components {
          * @enum {string}
          */
         HealthStatusEnum: "ok";
+        Lesson: {
+            /** Format: date-time */
+            readonly created_at: string;
+            readonly current_revision: number;
+            /** Format: uuid */
+            readonly id: string;
+            title?: string;
+            /** Format: date-time */
+            readonly updated_at: string;
+        };
+        /** @description Documents the create request body (OpenAPI only); responses use LessonSerializer. */
+        LessonCreate: {
+            title?: string;
+        };
         Login: {
             email: string;
             password: string;
+        };
+        PaginatedLessonList: {
+            /** @example 123 */
+            count: number;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=4
+             */
+            next?: string | null;
+            /**
+             * Format: uri
+             * @example http://api.example.org/accounts/?page=2
+             */
+            previous?: string | null;
+            results: components["schemas"]["Lesson"][];
         };
         PasswordResetConfirm: {
             new_password: string;
@@ -604,6 +677,96 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["Health"];
                 };
+            };
+        };
+    };
+    lessons_list: {
+        parameters: {
+            query?: {
+                /** @description A page number within the paginated result set. */
+                page?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedLessonList"];
+                };
+            };
+        };
+    };
+    lessons_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["LessonCreate"];
+                "application/x-www-form-urlencoded": components["schemas"]["LessonCreate"];
+                "multipart/form-data": components["schemas"]["LessonCreate"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Lesson"];
+                };
+            };
+            /** @description Error envelope (see core.errors). */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error envelope (see core.errors). */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    lessons_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this lesson. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Lesson"];
+                };
+            };
+            /** @description Error envelope (see core.errors). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
