@@ -11,7 +11,7 @@ export const NETWORK_MESSAGE = "Could not reach the server. Check your connectio
 export const THROTTLED_MESSAGE = "Too many attempts, try again later.";
 export const UNEXPECTED_MESSAGE = "Something went wrong. Please try again.";
 
-async function ensureCsrfCookie(): Promise<void> {
+export async function ensureCsrfCookie(): Promise<void> {
   if (readCookie(CSRF_COOKIE_NAME)) return;
   await api.get("/api/v1/auth/csrf/");
 }
