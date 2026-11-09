@@ -6,6 +6,10 @@
     "packages/shared",
     "apps/web"
   ],
+  "overrides": {
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
   "engines": {
     "node": ">=22.22.0"
   },
