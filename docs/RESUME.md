@@ -6,7 +6,7 @@ Read this first in a new session, then `docs/PROJECT_CONTEXT.md`.
 Whiteboard Tutor (repo folder `Solvely.ai`): free, whiteboard-first AI tutor for adults 18+ (college + IT/programming). Django/DRF + PostgreSQL backend, React/TS/Vite + Excalidraw frontend (not started), Gemini via `google-genai` (backend only). Workflow: BMAD Method.
 
 ## Rules from the user (standing)
-- Commits: user authorised Claude to commit/push to the repo in Git state on 2026-10-28 (several logical commits). Never add Claude as co-author.
+- Commits: Claude commits locally on `push-queue` only; pushes happen via `scripts/push-day.sh` when the user asks (policy changed 2026-10-29, see Git state). Never add Claude as co-author.
 - Decide autonomously; ask only when truly necessary. Model rule (user, 2026-10-29): use Sonnet subagents for routine work; Opus only for main operations (security/architecture-critical, AI pipeline, design-heavy). Set `model` explicitly on every Agent call. End every message with a line saying whether background work is in progress.
 - Memory notes also saved in `~/.claude/projects/.../memory/`.
 
@@ -29,16 +29,21 @@ Whiteboard Tutor (repo folder `Solvely.ai`): free, whiteboard-first AI tutor for
 - Story 1.5 account deletion: done. Full suite: 105 passed in ~5 s, ruff clean, no migration drift.
 - Story 1.1 web shell + typed API client + design tokens: done (web: lint/typecheck/24 tests/build pass; TypeScript 5.9.3 pinned).
 - Story 1.7 auth screens (sign-up, sign-in, forgot/reset, guards, sign out): done; web 52 tests pass; live browser e2e passed.
+- Story 2.1 Lesson model/API + New lesson + lazy Excalidraw Board: done and queued (9 commits on push-queue, not pushed). Web 73 tests, backend 138 tests.
 - Story 1.6 theme preference + settings page + delete-account dialog (POST /auth/account/delete/): done. Web 61 tests, backend 116 tests, all green.
 - EPIC 1 IS COMPLETE (stories 1.1 to 1.7).
 - Sprint file: `_bmad-output/implementation-artifacts/sprint-status.yaml` (1.2, 1.3 = done; epic-1 in-progress).
 
-## Git state
-- Remote: https://github.com/AbdullahAnwar26/Solvely.ai.git (origin/main). Author for commits: AbdullahAnwar26 <abdullahanwar264@gmail.com> (repo-local config). No Co-Authored-By lines.
-- User asked Claude to push in several logical commits so the commit count grows. Keep doing small logical commits per story, then push.
+## Git state (CHANGED 2026-10-29: do NOT push directly)
+- Remote: https://github.com/AbdullahAnwar26/Solvely.ai.git. Author for commits: AbdullahAnwar26 <abdullahanwar264@gmail.com> (repo-local config). No Co-Authored-By lines.
+- `main` = what is on GitHub (head `efc860b`, Epic 1 complete). It only moves when the user asks to run the daily replay.
+- Development happens on the local branch **`push-queue`** (currently checked out). Finished, verified work is committed there as small logical commits and is NOT pushed.
+- Each day: `bash scripts/push-day.sh <N>` replays the next N queued commits onto `main` with the real current date and pushes. Details, queue and the 21-day calendar are in `docs/PUSH_PLAN.md`.
+- After every finished major part Claude must: commit it on `push-queue`, update the Queue and Calendar tables in `docs/PUSH_PLAN.md`, and not push unless asked. Reason: GitHub's graph uses commit creation date, and the user wants commits spread over days.
+- Never fake or edit commit dates.
 
 ## Remaining work (in order)
-1. Start Epic 2 (editable whiteboard lessons): Story 2.1 first (create/open a Lesson with an empty Board; adds the New lesson action; first real owned model via OwnedModel; Excalidraw lazy load). Check Excalidraw 0.18.x with React 19 at install time. UX contract is FINAL (`_bmad-output/planning-artifacts/ux-designs/ux-Solvely.ai-2026-10-28/`, 28 UX-DRs). OpenAPI schema is clean. Web commands from repo root: `npm ci`, `npm run lint|typecheck|test|build`, `npm run gen:api` (needs API on :8000).
+1. Continue Epic 2: Story 2.2 (board tools + viewport controls; also verify Excalidraw text fonts load without CDN requests, see deferred-work.md), then 2.3 (autosave with BoardRevision + 409), 2.4 (resume). UX contract is FINAL (`_bmad-output/planning-artifacts/ux-designs/ux-Solvely.ai-2026-10-28/`, 28 UX-DRs). OpenAPI schema is clean. Web commands from repo root: `npm ci`, `npm run lint|typecheck|test|build`, `npm run gen:api` (needs API on :8000).
 3. (Done 2026-10-29) `bmad-ux` produced DESIGN.md + EXPERIENCE.md; user chose calm study-room tone and follow-device theme. Epics now 31 stories (added 1.6 theme/settings, 4.5 shortcuts dialog).
 4. Story 1.1 (web shell, Vite/React/TS; check TypeScript 7 toolchain compatibility before pinning), then Epic 2 to Epic 7 per `epics.md`.
 5. Epic 7.3 needs Docker.
@@ -60,7 +65,7 @@ cd C:\Users\Windows11\Desktop\Solvely.ai\apps\api
 ```
 Postgres service `postgresql-x64-18` must be running (it auto-starts). `apps/api/.env` holds `DATABASE_URL`.
 
-To continue, tell Claude: "Resume from docs/RESUME.md and start Epic 2 with Story 2.1." The `bmad-build` workflow is regenerated by running:
+To continue, tell Claude: "Resume from docs/RESUME.md and build Story 2.2, committing on push-queue and updating docs/PUSH_PLAN.md (do not push)." The `bmad-build` workflow is regenerated by running:
 `python -m uv run --no-cache "C:/Users/Windows11/Desktop/Solvely.ai/_bmad/scripts/render_skill.py" --project-root "C:/Users/Windows11/Desktop/Solvely.ai" --skill "C:/Users/Windows11/Desktop/Solvely.ai/.claude/skills/bmad-build"`
 
 ## Security note
