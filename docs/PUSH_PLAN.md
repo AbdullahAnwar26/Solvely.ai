@@ -1,6 +1,6 @@
 # Push plan: spreading commits over 3 weeks
 
-Last updated: 2026-10-29 (after Story 2.1). Planning window: Fri 2026-10-30 to Thu 2026-11-19 (21 days).
+Last updated: 2026-10-29 (after Story 2.1; 11 commits queued, none pushed). Planning window: Fri 2026-10-30 to Thu 2026-11-19 (21 days).
 
 ## How this works (read once)
 
@@ -53,7 +53,8 @@ The SHA is for reference only; replay order is the order below.
 | 7 | ca58dd1 | feat(web): add New lesson action to the shell and the lesson route | Story 2.1 | Sun Nov 1 |
 | 8 | c067bf2 | test(web): cover lesson creation, loading, not-found and board cleanup | Story 2.1 | Mon Nov 2 |
 | 9 | 00fa4a2 | docs: close story 2.1 and record Excalidraw and React 19 notes | Story 2.1 | Mon Nov 2 |
-| 10 | (next commit) | chore: add the push-day script and this push plan | tooling | Mon Nov 2 |
+| 10 | (queued) | chore: add the push-day replay script and a 3-week push plan | tooling | Mon Nov 2 |
+| 11 | (queued) | chore: keep shell scripts on LF line endings | tooling | Mon Nov 2 |
 
 ## Calendar
 
@@ -64,7 +65,7 @@ The SHA is for reference only; replay order is the order below.
 | 2026-10-30 | Fri | 3 | Planned | Queue #1 to #3: Lesson API, isolation harness, lesson tests |
 | 2026-10-31 | Sat | 2 | Planned | Queue #4 to #5: shared API types, Excalidraw dependency |
 | 2026-11-01 | Sun | 2 | Planned | Queue #6 to #7: lesson page with Board, New lesson action |
-| 2026-11-02 | Mon | 3 | Planned | Queue #8 to #10: web tests, Story 2.1 docs, push tooling |
+| 2026-11-02 | Mon | 4 | Planned | Queue #8 to #11: web tests, Story 2.1 docs, push tooling |
 | 2026-11-03 | Tue | 4 | Forecast | Story 2.2: board tools and viewport controls |
 | 2026-11-04 | Wed | 4 | Forecast | Story 2.2 tests and docs; Story 2.3 backend (BoardRevision, optimistic concurrency) |
 | 2026-11-05 | Thu | 4 | Forecast | Story 2.3 tests; autosave in the web app |
