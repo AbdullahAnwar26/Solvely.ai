@@ -6,6 +6,7 @@ import { AppShell } from "./AppShell";
 // Route components are lazy-loaded so each page ships as its own chunk.
 const HomePage = lazy(() => import("../pages/HomePage"));
 const NotFoundPage = lazy(() => import("../pages/NotFoundPage"));
+const LessonPage = lazy(() => import("../lessons/LessonPage"));
 const SettingsPage = lazy(() => import("../pages/SettingsPage"));
 const SignUpPage = lazy(() => import("../auth/SignUpPage"));
 const SignInPage = lazy(() => import("../auth/SignInPage"));
@@ -36,6 +37,7 @@ export const routes: RouteObject[] = [
             element: <AppShell />,
             children: [
               { index: true, element: <HomePage /> },
+              { path: "lessons/:lessonId", element: <LessonPage /> },
               { path: "settings", element: <SettingsPage /> },
               { path: "*", element: <NotFoundPage /> },
             ],

@@ -298,3 +298,122 @@
   color: var(--color-danger);
   font-weight: var(--font-label-weight);
 }
+
+/* ---- New lesson (primary action at the top of the sidebar) ---- */
+
+.new-lesson-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: var(--space-10);
+  padding: 0 var(--space-4);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--font-label-size);
+  font-weight: var(--font-label-weight);
+  white-space: nowrap;
+}
+
+.new-lesson-button > svg {
+  flex: none;
+}
+
+.new-lesson-button:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.new-lesson-button:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+.shell[data-sidebar="collapsed"] .new-lesson-button {
+  padding: 0;
+}
+
+.shell[data-layout="rail"] .new-lesson-button,
+.shell[data-layout="drawer"] .new-lesson-button {
+  min-height: var(--space-touch-target);
+}
+
+/* ---- Lesson workspace: the Board fills the main area ---- */
+
+.shell:has(.lesson-workspace) .content {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.lesson-workspace {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.lesson-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-gutter-desktop);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.lesson-title {
+  margin: 0;
+  overflow: hidden;
+  font-family: var(--font-serif);
+  font-size: var(--font-headline-size);
+  font-weight: var(--font-headline-weight);
+  line-height: var(--font-headline-line-height);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.board-region {
+  position: relative;
+  flex: 1;
+  /* Board colour is the room's wall: no frame, no shadow. */
+  min-height: 60vh;
+  background: var(--color-board);
+}
+
+.board-canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.board-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--color-ink-muted);
+}
+
+.lesson-state {
+  max-width: 560px;
+  margin: var(--space-8) auto;
+  padding: 0 var(--space-gutter-desktop);
+}
+
+.lesson-retry {
+  align-self: flex-start;
+  height: 40px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius);
+  background: var(--color-surface-raised);
+  color: var(--color-ink);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--font-label-size);
+  font-weight: var(--font-label-weight);
+}

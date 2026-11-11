@@ -4,6 +4,7 @@ import "./AppShell.css";
 import { useSession } from "../auth/SessionContext";
 import { CloseIcon, HomeIcon, MenuIcon, SettingsIcon, SidebarIcon, SignOutIcon } from "./icons";
 import { useLayoutMode, type LayoutMode } from "./layoutMode";
+import { NewLessonButton } from "../lessons/NewLessonButton";
 import { readSidebarCollapsed, writeSidebarCollapsed } from "./sidebarPreference";
 
 const NAV_ITEMS = [
@@ -24,6 +25,7 @@ export function AppShell() {
   const email = state.status === "signedIn" ? state.user.email : null;
   const [signOutPending, setSignOutPending] = useState(false);
   const [signOutError, setSignOutError] = useState<string | null>(null);
+  const [newLessonError, setNewLessonError] = useState<string | null>(null);
 
   const onSignOut = async () => {
     if (signOutPending) return;
@@ -134,6 +136,13 @@ export function AppShell() {
             {expanded && <span className="brand">Whiteboard Tutor</span>}
           </div>
         )}
+        <div className="new-lesson">
+          <NewLessonButton
+            expanded={expanded}
+            onError={setNewLessonError}
+            onCreated={() => setOverlayFor(null)}
+          />
+        </div>
         <ul className="nav-list">
           {NAV_ITEMS.map(({ to, label, Icon, end }) => (
             <li key={to}>
@@ -173,6 +182,11 @@ export function AppShell() {
       {overlay && <div className="scrim" aria-hidden="true" onClick={() => closeOverlay(true)} />}
 
       <main ref={mainRef} id="main" className="content" tabIndex={-1} inert={overlay}>
+        {newLessonError && (
+          <p role="alert" className="shell-alert">
+            {newLessonError}
+          </p>
+        )}
         {signOutError && (
           <p role="alert" className="shell-alert">
             {signOutError}
