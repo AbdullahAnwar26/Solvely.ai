@@ -23,3 +23,6 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-1-6-theme-and-account-settings.md`
   summary: Add a request timeout (AbortController) and a visible retry state to the web API client so a stalled request cannot leave a form stuck on a busy state forever
   evidence: `apps/web/src/api/client.ts` has no timeout; a live run once hung on "Signing in…" (cause unproven, likely a test-script artifact).
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-1-create-and-open-lesson.md`
+  summary: In Story 2.2, verify Excalidraw text fonts load without external (CDN) requests (self-host if needed) and review the large lazy Board chunk (~1.1 MB, 345 KB gzip)
+  evidence: live run only drew a rectangle; Vite chunk-size warning.
