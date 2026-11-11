@@ -97,6 +97,8 @@ describe("AppShell keyboard", () => {
     await user.tab();
     expect(screen.getByRole("button", { name: "Collapse sidebar" })).toHaveFocus();
     await user.tab();
+    expect(within(screen.getByRole("navigation", { name: "Main" })).getByRole("button", { name: "New lesson" })).toHaveFocus();
+    await user.tab();
     expect(within(screen.getByRole("navigation", { name: "Main" })).getByRole("link", { name: "Home" })).toHaveFocus();
     await user.tab();
     expect(within(screen.getByRole("navigation", { name: "Main" })).getByRole("link", { name: "Settings" })).toHaveFocus();
