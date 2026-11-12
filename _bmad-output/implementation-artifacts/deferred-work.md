@@ -26,3 +26,10 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-2-1-create-and-open-lesson.md`
   summary: In Story 2.2, verify Excalidraw text fonts load without external (CDN) requests (self-host if needed) and review the large lazy Board chunk (~1.1 MB, 345 KB gzip)
   evidence: live run only drew a rectangle; Vite chunk-size warning.
+- RESOLVED 2026-10-29 (Story 2.2): Excalidraw fonts are self-hosted via `EXCALIDRAW_ASSET_PATH` (`apps/web/public/excalidraw-assets`, Xiaolai CJK font excluded) and drawing text makes no third-party requests. The ~1.1 MB lazy Board chunk is unchanged and remains lazy-loaded only on the Lesson route; origin badges ("You"/"Tutor") are still open for a later story.
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-2-board-tools-and-viewport.md`
+  summary: CJK text on the Board falls back to Excalidraw's default CDN for the 13 MB Xiaolai font (left out of the repo); decide whether to self-host it via a build-time download or document the limitation; also collect font licence notices (Excalifont, Virgil, Cascadia, Assistant, Nunito, Lilita, Liberation, ComicShanns) into a third-party notices file before launch (Story 7.4)
+  evidence: apps/web/public/excalidraw-assets/fonts holds only the Latin fonts (about 500 KB).
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-2-board-tools-and-viewport.md`
+  summary: Run the production build (vite preview) in a real browser once to confirm fonts and assets resolve at /excalidraw-assets/ outside the dev server; consider hiding Excalidraw's duplicate footer zoom buttons if the UX review wants a single control set
+  evidence: only the dev server was exercised; both zoom control sets exist.
