@@ -1,6 +1,6 @@
 # Push plan: spreading commits over 3 weeks
 
-Last updated: 2026-10-29 (after Story 2.1; 11 commits queued, none pushed). Planning window: Fri 2026-10-30 to Thu 2026-11-19 (21 days).
+Last updated: 2026-10-29 (after Story 2.2; 18 commits queued, none pushed). Planning window: Fri 2026-10-30 to Thu 2026-11-19 (21 days).
 
 ## How this works (read once)
 
@@ -55,6 +55,13 @@ The SHA is for reference only; replay order is the order below.
 | 9 | 00fa4a2 | docs: close story 2.1 and record Excalidraw and React 19 notes | Story 2.1 | Mon Nov 2 |
 | 10 | (queued) | chore: add the push-day replay script and a 3-week push plan | tooling | Mon Nov 2 |
 | 11 | (queued) | chore: keep shell scripts on LF line endings | tooling | Mon Nov 2 |
+| 12 | 523304b | feat(web): tag learner-created board elements with their origin | Story 2.2 | Tue Nov 3 |
+| 13 | 528e7c9 | feat(web): add accessible zoom and fit controls for the board | Story 2.2 | Tue Nov 3 |
+| 14 | c9e7f9d | feat(web): self-host Excalidraw fonts so drawing text makes no third-party requests | Story 2.2 | Tue Nov 3 |
+| 15 | 7a9a1d2 | feat(web): wire origin tagging, controls and asset path into the lazy board | Story 2.2 | Tue Nov 3 |
+| 16 | 9001eb4 | test(web): cover board controls, tagging and the stable Excalidraw mock | Story 2.2 | Wed Nov 4 |
+| 17 | 30b8751 | docs: close story 2.2 and log font licence and production-build follow-ups | Story 2.2 | Wed Nov 4 |
+| 18 | (queued) | docs: update the push plan with the story 2.2 commits | tooling | Wed Nov 4 |
 
 ## Calendar
 
@@ -66,8 +73,8 @@ The SHA is for reference only; replay order is the order below.
 | 2026-10-31 | Sat | 2 | Planned | Queue #4 to #5: shared API types, Excalidraw dependency |
 | 2026-11-01 | Sun | 2 | Planned | Queue #6 to #7: lesson page with Board, New lesson action |
 | 2026-11-02 | Mon | 4 | Planned | Queue #8 to #11: web tests, Story 2.1 docs, push tooling |
-| 2026-11-03 | Tue | 4 | Forecast | Story 2.2: board tools and viewport controls |
-| 2026-11-04 | Wed | 4 | Forecast | Story 2.2 tests and docs; Story 2.3 backend (BoardRevision, optimistic concurrency) |
+| 2026-11-03 | Tue | 4 | Planned | Queue #12 to #15: Story 2.2 origin tagging, zoom and fit controls, self-hosted fonts, board wiring |
+| 2026-11-04 | Wed | 4 | Planned + Forecast | Queue #16 to #18: Story 2.2 tests, docs, plan update; plus 1 from Story 2.3 backend (BoardRevision, optimistic concurrency) |
 | 2026-11-05 | Thu | 4 | Forecast | Story 2.3 tests; autosave in the web app |
 | 2026-11-06 | Fri | 4 | Forecast | Story 2.3 web tests; Story 2.4 resume and recovery |
 | 2026-11-07 | Sat | 2 | Forecast | Story 2.4 tests; Epic 2 close-out docs |
