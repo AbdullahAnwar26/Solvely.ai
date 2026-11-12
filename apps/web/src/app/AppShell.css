@@ -388,6 +388,64 @@
 .board-canvas {
   position: absolute;
   inset: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.board-surface {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.board-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-gutter-desktop);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.board-control {
+  min-width: 32px;
+  min-height: 32px;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius);
+  background: var(--color-surface-raised);
+  color: var(--color-ink);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--font-label-size);
+  font-weight: var(--font-label-weight);
+}
+
+.board-control-wide {
+  min-width: 56px;
+}
+
+.board-control:hover:not(:disabled) {
+  background: var(--color-surface-subtle);
+}
+
+.board-control:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+/* Touch layouts: 44px targets, compact gutters, no horizontal overflow. */
+@media (pointer: coarse), (max-width: 767px) {
+  .board-controls {
+    padding: var(--space-1) var(--space-gutter-mobile);
+  }
+
+  .board-control {
+    min-width: var(--space-touch-target);
+    min-height: var(--space-touch-target);
+  }
 }
 
 .board-loading {
