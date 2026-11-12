@@ -8,6 +8,7 @@ import { envelope, mockApi, USER } from "../test/mockApi";
 const board = vi.hoisted(() => ({
   loaded: false,
   historyClear: vi.fn(),
+  api: null as unknown as { history: { clear: () => void } },
 }));
 
 // The real canvas needs a browser; the module is mocked so laziness and cleanup are observable.
@@ -15,7 +16,7 @@ vi.mock("@excalidraw/excalidraw", () => {
   board.loaded = true;
   return {
     Excalidraw: (props: { theme?: string; excalidrawAPI?: (api: unknown) => void }) => {
-      props.excalidrawAPI?.({ history: { clear: board.historyClear } });
+      props.excalidrawAPI?.(board.api);
       return <div data-testid="excalidraw" data-theme={props.theme} />;
     },
   };
@@ -38,6 +39,7 @@ function renderAt(path = "/") {
 }
 
 beforeEach(() => {
+  board.api = { history: { clear: board.historyClear } };
   board.historyClear.mockClear();
 });
 
