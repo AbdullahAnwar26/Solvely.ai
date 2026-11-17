@@ -192,6 +192,65 @@ def test_update_cannot_change_owner(endpoint, client_a, user_a, user_b):
     assert row.owner_id == user_a.pk
 
 
+# --- Nested endpoints (rows served under a parent, e.g. a Lesson's Board) ----------------
+
+@endpoint_params("nested_get")
+def test_nested_get_anonymous_rejected(endpoint, user_b):
+    row = endpoint.make(user_b)
+    assert_envelope(make_csrf_client().get(endpoint.url_for_row(row)), 403, "not_authenticated")
+
+
+@endpoint_params("nested_get")
+def test_nested_get_own(endpoint, client_a, user_a):
+    row = endpoint.make(user_a)
+    assert client_a.get(endpoint.url_for_row(row)).status_code == 200
+
+
+@endpoint_params("nested_get")
+def test_nested_get_foreign_is_404_same_as_missing(endpoint, client_a, user_b):
+    foreign = endpoint.make(user_b)
+    foreign_response = client_a.get(endpoint.url_for_row(foreign))
+    missing_response = client_a.get(endpoint.missing_parent_url())
+    assert_envelope(foreign_response, 404, "not_found")
+    assert_envelope(missing_response, 404, "not_found")
+    assert without_request_id(foreign_response) == without_request_id(missing_response)
+
+
+@endpoint_params("nested_put")
+def test_nested_put_anonymous_rejected(endpoint, user_b):
+    row = endpoint.make(user_b)
+    response = send(make_csrf_client(), "put", endpoint.url_for_row(row),
+                    endpoint.nested_put_payload(row))
+    assert_envelope(response, 403, "not_authenticated")
+
+
+@endpoint_params("nested_put")
+def test_nested_put_foreign_is_404_and_nothing_written(endpoint, client_a, user_b):
+    foreign = endpoint.make(user_b)
+    before = list(endpoint.model.objects.order_by("pk").values())
+    response = send(client_a, "put", endpoint.url_for_row(foreign),
+                    endpoint.nested_put_payload(foreign))
+    assert_envelope(response, 404, "not_found")
+    assert list(endpoint.model.objects.order_by("pk").values()) == before
+
+
+@endpoint_params("nested_put")
+def test_nested_put_missing_is_404(endpoint, client_a, user_a):
+    row = endpoint.make(user_a)
+    payload = endpoint.nested_put_payload(row)
+    response = send(client_a, "put", endpoint.missing_parent_url(), payload)
+    assert_envelope(response, 404, "not_found")
+
+
+@endpoint_params("nested_put")
+def test_nested_put_ignores_client_owner(endpoint, client_a, user_a, user_b):
+    row = endpoint.make(user_a)
+    payload = {**endpoint.nested_put_payload(row), "owner": user_b.pk}
+    response = send(client_a, "put", endpoint.url_for_row(row), payload)
+    assert response.status_code == 200
+    assert set(endpoint.model.objects.values_list("owner_id", flat=True)) == {user_a.pk}
+
+
 # --- Guards -------------------------------------------------------------------------------
 
 def test_every_owned_model_is_registered():
