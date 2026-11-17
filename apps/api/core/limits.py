@@ -28,3 +28,61 @@ LESSON_CREATE_RATE = "60/hour"
 
 # Lesson title length (characters).
 LESSON_TITLE_MAX_LENGTH = 120
+
+# --- Board revisions and payloads (Story 2.3) ---
+
+# Board saves allowed per signed-in user (DRF rate string). Autosave fires about 1.5 s after the
+# last edit, so a busy Learner stays far below this.
+BOARD_SAVE_RATE = "120/min"
+
+# Revisions kept per Lesson; older rows are pruned after each successful save.
+BOARD_REVISIONS_KEPT = 50
+
+# The only Board payload schema version accepted.
+BOARD_SCHEMA_VERSION = 1
+
+# Whole PUT body size (bytes); larger bodies are refused with 413 before parsing.
+BOARD_MAX_BODY_BYTES = 2 * 1024 * 1024
+
+# Elements per Board.
+BOARD_MAX_ELEMENTS = 5000
+
+# Element id length (characters).
+BOARD_ELEMENT_ID_MAX_LENGTH = 64
+
+# Text content of a text element (`text`, `originalText`), in characters.
+BOARD_TEXT_MAX_LENGTH = 20000
+
+# Element `link` length (characters).
+BOARD_LINK_MAX_LENGTH = 2048
+
+# Any other string inside an element (colours, ids, font names, custom data).
+BOARD_STRING_MAX_LENGTH = 256
+
+# Items in any list inside an element (freehand `points`, `pressures`, `groupIds`, ...).
+BOARD_ELEMENT_LIST_MAX = 20000
+
+# Keys per object inside an element.
+BOARD_ELEMENT_MAX_KEYS = 64
+
+# Nesting depth of values inside an element (the element itself is depth 1).
+BOARD_ELEMENT_MAX_DEPTH = 5
+
+# |x|, |y|, |width| and |height| of an element, in scene units.
+BOARD_COORDINATE_LIMIT = 1_000_000
+
+# Any other number inside an element (timestamps, seeds and nonces stay well below this).
+BOARD_NUMBER_ABS_MAX = 10**15
+
+# Element types the Board accepts (a closed Excalidraw subset: no images or embeds).
+BOARD_ELEMENT_TYPES = frozenset(
+    {"rectangle", "diamond", "ellipse", "arrow", "line", "freedraw", "text", "frame"}
+)
+
+# Who made an element (AD-3).
+BOARD_ORIGINS = frozenset({"learner", "ai"})
+
+# Board view settings: zoom bounds (match the web app's clamp) and background colour length.
+BOARD_ZOOM_MIN = 0.1
+BOARD_ZOOM_MAX = 30
+BOARD_BACKGROUND_MAX_LENGTH = 32

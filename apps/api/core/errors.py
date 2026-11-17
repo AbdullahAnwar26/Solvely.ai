@@ -1,5 +1,8 @@
 """Single API error envelope: {"error": {"code", "message", "retryable", "request_id", "fields"?}}.
 
+A domain error may add a few named context keys next to the standard ones (for example
+`current_revision` on a 409 `revision_conflict`); the standard fields are always present.
+
 Codes are stable strings. Responses never carry tracebacks; unexpected errors are
 logged server-side with the request id.
 """
@@ -44,10 +47,19 @@ class ApiError(exceptions.APIException):
 
     status_code = 400
     retryable = False
+    # Extra context keys merged into the envelope (never overriding the standard fields).
+    extra = None
 
 
-def error_body(code, message, retryable, request_id, fields=None):
-    error = {"code": code, "message": message, "retryable": retryable, "request_id": request_id}
+class PayloadTooLarge(ApiError):
+    status_code = 413
+    default_code = "payload_too_large"
+    default_detail = "That is too much to save at once."
+
+
+def error_body(code, message, retryable, request_id, fields=None, extra=None):
+    error = {**(extra or {})}
+    error.update(code=code, message=message, retryable=retryable, request_id=request_id)
     if fields is not None:
         error["fields"] = fields
     return {"error": error}
@@ -113,7 +125,8 @@ def api_exception_handler(exc, context):
 
     code, message, retryable = _classify(exc)
     fields = _flatten_fields(exc.detail) if isinstance(exc, exceptions.ValidationError) else None
-    response.data = error_body(code, message, retryable, request_id, fields)
+    extra = exc.extra if isinstance(exc, ApiError) else None
+    response.data = error_body(code, message, retryable, request_id, fields, extra)
     return response
 
 
