@@ -177,13 +177,17 @@ export interface paths {
         };
         /**
          * List my lessons, newest first
-         * @description Create, retrieve and list the caller's own Lessons. No update or delete in this story.
+         * @description Create, retrieve and list the caller's own Lessons, and read or save their Board.
+         *
+         *     No Lesson update or delete yet.
          */
         get: operations["lessons_list"];
         put?: never;
         /**
          * Create a lesson with an empty Board
-         * @description Create, retrieve and list the caller's own Lessons. No update or delete in this story.
+         * @description Create, retrieve and list the caller's own Lessons, and read or save their Board.
+         *
+         *     No Lesson update or delete yet.
          */
         post: operations["lessons_create"];
         delete?: never;
@@ -201,10 +205,38 @@ export interface paths {
         };
         /**
          * Get one of my lessons
-         * @description Create, retrieve and list the caller's own Lessons. No update or delete in this story.
+         * @description Create, retrieve and list the caller's own Lessons, and read or save their Board.
+         *
+         *     No Lesson update or delete yet.
          */
         get: operations["lessons_retrieve"];
         put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/lessons/{id}/board/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get the latest Board revision of my lesson (revision 0 is the empty Board)
+         * @description Create, retrieve and list the caller's own Lessons, and read or save their Board.
+         *
+         *     No Lesson update or delete yet.
+         */
+        get: operations["lessons_board_retrieve"];
+        /**
+         * Save my lesson's Board as a new revision
+         * @description Optimistic concurrency (AD-4): `base_revision` must equal the Lesson's current revision, otherwise 409 `revision_conflict` and nothing is written. Repeating a save with the same `save_id` returns the revision it created (idempotent retry).
+         */
+        put: operations["lessons_board_update"];
         post?: never;
         delete?: never;
         options?: never;
@@ -257,6 +289,40 @@ export interface components {
     schemas: {
         AccountDelete: {
             password: string;
+        };
+        BoardAppState: {
+            /** Format: double */
+            scrollX?: number;
+            /** Format: double */
+            scrollY?: number;
+            viewBackgroundColor?: string;
+            zoom?: components["schemas"]["BoardZoom"];
+        };
+        BoardPayload: {
+            app_state?: components["schemas"]["BoardAppState"];
+            elements: {
+                [key: string]: unknown;
+            }[];
+            schema_version: number;
+        };
+        /** @description PUT body as documented in OpenAPI. */
+        BoardSaveRequest: {
+            base_revision: number;
+            board: components["schemas"]["BoardPayload"];
+            /** Format: uuid */
+            save_id: string;
+        };
+        BoardSaveResponse: {
+            revision: number;
+        };
+        /** @description GET response: the latest revision number and its Board (revision 0 = empty Board). */
+        BoardState: {
+            board: components["schemas"]["BoardPayload"];
+            revision: number;
+        };
+        BoardZoom: {
+            /** Format: double */
+            value: number;
         };
         Health: {
             status: components["schemas"]["HealthStatusEnum"];
@@ -763,6 +829,98 @@ export interface operations {
             };
             /** @description Error envelope (see core.errors). */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    lessons_board_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this lesson. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BoardState"];
+                };
+            };
+            /** @description Error envelope (see core.errors). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    lessons_board_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description A UUID string identifying this lesson. */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BoardSaveRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["BoardSaveRequest"];
+                "multipart/form-data": components["schemas"]["BoardSaveRequest"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BoardSaveResponse"];
+                };
+            };
+            /** @description Error envelope (see core.errors). */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error envelope (see core.errors). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error envelope with code `revision_conflict` and `current_revision`: the save was based on an older revision and nothing was written. */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error envelope (see core.errors). */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error envelope (see core.errors). */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
