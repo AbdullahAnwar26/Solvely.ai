@@ -10,3 +10,14 @@ class LessonCreateRateThrottle(SimpleRateThrottle):
         if not request.user or not request.user.is_authenticated:
             return None
         return self.cache_format % {"scope": self.scope, "ident": request.user.pk}
+
+
+class BoardSaveRateThrottle(SimpleRateThrottle):
+    """Board saves per signed-in user, across all Lessons and IPs."""
+
+    scope = "board_save"
+
+    def get_cache_key(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return None
+        return self.cache_format % {"scope": self.scope, "ident": request.user.pk}

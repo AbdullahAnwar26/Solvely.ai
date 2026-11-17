@@ -128,6 +128,7 @@ REST_FRAMEWORK = {
         "account_delete": limits.ACCOUNT_DELETE_RATE,
         "account_delete_user": limits.ACCOUNT_DELETE_RATE,
         "lesson_create": limits.LESSON_CREATE_RATE,
+        "board_save": limits.BOARD_SAVE_RATE,
     },
     # 0 = throttle on REMOTE_ADDR only, so a spoofed X-Forwarded-For cannot dodge limits.
     # Set to the number of trusted reverse proxies in production.
