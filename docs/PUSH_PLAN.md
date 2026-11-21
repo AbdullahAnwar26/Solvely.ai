@@ -1,6 +1,6 @@
 # Push plan: spreading commits over 3 weeks
 
-Last updated: 2026-10-29 (after Story 2.2; 18 commits queued, none pushed). Planning window: Fri 2026-10-30 to Thu 2026-11-19 (21 days).
+Last updated: 2026-10-29 (after Story 2.3; 29 commits queued, none pushed). Planning window: Fri 2026-10-30 to Thu 2026-11-19 (21 days).
 
 ## How this works (read once)
 
@@ -61,7 +61,18 @@ The SHA is for reference only; replay order is the order below.
 | 15 | 7a9a1d2 | feat(web): wire origin tagging, controls and asset path into the lazy board | Story 2.2 | Tue Nov 3 |
 | 16 | 9001eb4 | test(web): cover board controls, tagging and the stable Excalidraw mock | Story 2.2 | Wed Nov 4 |
 | 17 | 30b8751 | docs: close story 2.2 and log font licence and production-build follow-ups | Story 2.2 | Wed Nov 4 |
-| 18 | (queued) | docs: update the push plan with the story 2.2 commits | tooling | Wed Nov 4 |
+| 18 | 0bf1923 | docs: update the push plan with the story 2.2 commits | tooling | Wed Nov 4 |
+| 19 | b706582 | feat(api): add append-only BoardRevision model and strict board payload validation | Story 2.3 | Wed Nov 4 |
+| 20 | a9e6954 | feat(api): save and load boards with optimistic concurrency, idempotent retries and pruning | Story 2.3 | Thu Nov 5 |
+| 21 | f878fcb | test(api): extend the isolation harness to endpoints nested under a parent | Story 2.3 | Thu Nov 5 |
+| 22 | 07136d3 | test(api): cover revisions, conflicts, idempotency, validation and concurrent saves | Story 2.3 | Thu Nov 5 |
+| 23 | 912095c | feat(shared): regenerate API types with the board endpoints | Story 2.3 | Thu Nov 5 |
+| 24 | 2787082 | feat(web): add board serialization with a change fingerprint and the board API client | Story 2.3 | Fri Nov 6 |
+| 25 | 4ac729e | feat(web): add the autosave state machine with debounce, backoff and conflict handling | Story 2.3 | Fri Nov 6 |
+| 26 | e86d569 | feat(web): show save status, handle conflicts and load the latest revision on open | Story 2.3 | Fri Nov 6 |
+| 27 | 73c616a | test(web): cover serialization, the autosave state machine and the page-level save flow | Story 2.3 | Fri Nov 6 |
+| 28 | fe3590d | docs: close story 2.3 and log autosave polish and recovery follow-ups | Story 2.3 | Sat Nov 7 |
+| 29 | (queued) | docs: update the push plan with the story 2.3 commits | tooling | Sat Nov 7 |
 
 ## Calendar
 
@@ -74,12 +85,12 @@ The SHA is for reference only; replay order is the order below.
 | 2026-11-01 | Sun | 2 | Planned | Queue #6 to #7: lesson page with Board, New lesson action |
 | 2026-11-02 | Mon | 4 | Planned | Queue #8 to #11: web tests, Story 2.1 docs, push tooling |
 | 2026-11-03 | Tue | 4 | Planned | Queue #12 to #15: Story 2.2 origin tagging, zoom and fit controls, self-hosted fonts, board wiring |
-| 2026-11-04 | Wed | 4 | Planned + Forecast | Queue #16 to #18: Story 2.2 tests, docs, plan update; plus 1 from Story 2.3 backend (BoardRevision, optimistic concurrency) |
-| 2026-11-05 | Thu | 4 | Forecast | Story 2.3 tests; autosave in the web app |
-| 2026-11-06 | Fri | 4 | Forecast | Story 2.3 web tests; Story 2.4 resume and recovery |
-| 2026-11-07 | Sat | 2 | Forecast | Story 2.4 tests; Epic 2 close-out docs |
-| 2026-11-08 | Sun | 2 | Forecast | Epic 3 start: AI provider port, FakeProvider, Gemini adapter |
-| 2026-11-09 | Mon | 4 | Forecast | Story 3.1 tests; Story 3.2 lesson schema and Board Operation validator |
+| 2026-11-04 | Wed | 4 | Planned | Queue #16 to #19: Story 2.2 tests, docs, plan update; Story 2.3 revision model and validation |
+| 2026-11-05 | Thu | 4 | Planned | Queue #20 to #23: Story 2.3 board save/load API, isolation harness, revision tests |
+| 2026-11-06 | Fri | 4 | Planned | Queue #24 to #27: shared API types, board serialization, autosave state machine, save status UI |
+| 2026-11-07 | Sat | 2 | Planned | Queue #28 to #29: Story 2.3 web tests, docs, plan update |
+| 2026-11-08 | Sun | 2 | Forecast | Story 2.4: resume after refresh, unsaved-change label polish, viewport persistence |
+| 2026-11-09 | Mon | 4 | Forecast | Story 2.4 tests and Epic 2 close-out docs; Epic 3 start: AI provider port and FakeProvider |
 | 2026-11-10 | Tue | 4 | Forecast | Story 3.2 tests; Story 3.3 deterministic layout engine |
 | 2026-11-11 | Wed | 4 | Forecast | Story 3.3 tests; Story 3.4 daily Lesson Allowance |
 | 2026-11-12 | Thu | 4 | Forecast | Story 3.4 tests; Story 3.5 Explain and Solve generation |
