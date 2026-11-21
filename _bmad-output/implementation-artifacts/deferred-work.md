@@ -33,3 +33,9 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-2-2-board-tools-and-viewport.md`
   summary: Run the production build (vite preview) in a real browser once to confirm fonts and assets resolve at /excalidraw-assets/ outside the dev server; consider hiding Excalidraw's duplicate footer zoom buttons if the UX review wants a single control set
   evidence: only the dev server was exercised; both zoom control sets exist.
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-3-autosave-revisions.md`
+  summary: Polish the save label so it flips to "Unsaved changes" as soon as a real content change happens (cheap element-version check, no full serialization), instead of staying "Saved" until the 1.5 s debounce fires
+  evidence: useAutosave only compares fingerprints when the timer fires; low severity because beforeunload guards leaving. Fold into Story 2.4.
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-3-autosave-revisions.md`
+  summary: Story 2.4 must also cover: viewport-only changes are not persisted until the next content save; EXPERIENCE.md "Keep mine as a copy" on conflict needs a duplicate endpoint (Story 6.2); offline banner and save-on-reconnect are not built
+  evidence: gaps listed in the Story 2.3 report.
