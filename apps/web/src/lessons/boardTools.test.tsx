@@ -19,6 +19,7 @@ const h = vi.hoisted(() => ({
 
 vi.mock("@excalidraw/excalidraw", () => ({
   CaptureUpdateAction: { NEVER: "NEVER" },
+  restoreElements: (els: unknown[]) => els,
   Excalidraw: (props: { excalidrawAPI?: (api: unknown) => void; onChange?: Change }) => {
     h.onChange = props.onChange ?? null;
     props.excalidrawAPI?.(h.api);
@@ -27,6 +28,10 @@ vi.mock("@excalidraw/excalidraw", () => ({
 }));
 vi.mock("@excalidraw/excalidraw/index.css", () => ({}));
 vi.mock("../theme/useResolvedTheme", () => ({ useResolvedTheme: () => "light" }));
+vi.mock("./boardApi", () => ({ fetchBoard: vi.fn(), saveBoard: vi.fn(() => new Promise(() => undefined)) }));
+
+const EMPTY = { revision: 0, board: { schema_version: 1, elements: [] } };
+const renderBoard = () => render(<Board lessonId="l1" initial={EMPTY} statusSlot={null} />);
 
 h.api = {
   history: { clear: h.historyClear },
@@ -56,7 +61,7 @@ beforeEach(() => {
 
 describe("Board origin tagging", () => {
   it("tags a new element once with no undo capture, and does not loop", () => {
-    render(<Board />);
+    renderBoard();
     act(() => h.onChange?.([rect()], idle));
     expect(h.updateScene).toHaveBeenCalledTimes(1);
     const arg = h.updateScene.mock.calls[0]?.[0];
@@ -68,26 +73,26 @@ describe("Board origin tagging", () => {
   });
 
   it("waits while an element is still being drawn or edited", () => {
-    render(<Board />);
+    renderBoard();
     act(() => h.onChange?.([rect()], { ...idle, newElement: {} }));
     act(() => h.onChange?.([rect()], { ...idle, editingTextElement: {} }));
     expect(h.updateScene).not.toHaveBeenCalled();
   });
 
   it("leaves an AI origin alone", () => {
-    render(<Board />);
+    renderBoard();
     act(() => h.onChange?.([rect({ customData: { origin: "ai" } })], idle));
     expect(h.updateScene).not.toHaveBeenCalled();
   });
 
   it("clears history on unmount", () => {
-    const { unmount } = render(<Board />);
+    const { unmount } = renderBoard();
     unmount();
     expect(h.historyClear).toHaveBeenCalledTimes(1);
   });
 
   it("enables Fit only once there is content and shows the live zoom", () => {
-    render(<Board />);
+    renderBoard();
     const fit = screen.getByRole("button", { name: "Fit to content" });
     expect(fit).toBeDisabled();
     act(() => h.onChange?.([rect({ customData: { origin: "learner" } })], { ...idle, zoom: { value: 2 } }));

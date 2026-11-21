@@ -15,6 +15,8 @@ const board = vi.hoisted(() => ({
 vi.mock("@excalidraw/excalidraw", () => {
   board.loaded = true;
   return {
+    CaptureUpdateAction: { NEVER: "NEVER" },
+    restoreElements: (els: unknown[]) => els,
     Excalidraw: (props: { theme?: string; excalidrawAPI?: (api: unknown) => void }) => {
       props.excalidrawAPI?.(board.api);
       return <div data-testid="excalidraw" data-theme={props.theme} />;
@@ -31,6 +33,9 @@ const LESSON = {
   created_at: "2026-10-29T10:00:00Z",
   updated_at: "2026-10-29T10:00:00Z",
 };
+
+const BOARD_URL = `GET /api/v1/lessons/${LESSON_ID}/board/`;
+const EMPTY_BOARD = { status: 200, body: { revision: 0, board: { schema_version: 1, elements: [] } } };
 
 function renderAt(path = "/") {
   const router = createMemoryRouter(routes, { initialEntries: [path] });
@@ -69,6 +74,7 @@ describe("New lesson", () => {
         return { status: 201, body: LESSON };
       },
       [`GET /api/v1/lessons/${LESSON_ID}/`]: { status: 200, body: LESSON },
+      [BOARD_URL]: EMPTY_BOARD,
     });
     const router = renderAt("/");
 
@@ -116,23 +122,25 @@ describe("New lesson", () => {
 });
 
 describe("Lesson page", () => {
-  it("shows the title and the Board with no save indicator", async () => {
+  it("shows the title, the Board and a Saved status for the loaded revision", async () => {
     mockApi({
       "GET /api/v1/auth/me/": { status: 200, body: USER },
       [`GET /api/v1/lessons/${LESSON_ID}/`]: { status: 200, body: { ...LESSON, title: "Big-O" } },
+      [BOARD_URL]: EMPTY_BOARD,
     });
     renderAt(`/lessons/${LESSON_ID}`);
 
     expect(await screen.findByRole("heading", { level: 1, name: "Big-O" })).toBeInTheDocument();
     expect(await screen.findByTestId("excalidraw")).toBeInTheDocument();
     expect(board.loaded).toBe(true);
-    expect(screen.queryByText(/saved|saving|autosave/i)).not.toBeInTheDocument();
+    expect(await screen.findByText("Saved")).toBeInTheDocument();
   });
 
   it.each(["light", "dark"] as const)("gives the Board the %s theme", async (preference) => {
     mockApi({
       "GET /api/v1/auth/me/": { status: 200, body: { ...USER, theme_preference: preference } },
       [`GET /api/v1/lessons/${LESSON_ID}/`]: { status: 200, body: LESSON },
+      [BOARD_URL]: EMPTY_BOARD,
     });
     renderAt(`/lessons/${LESSON_ID}`);
     expect(await screen.findByTestId("excalidraw")).toHaveAttribute("data-theme", preference);
@@ -151,6 +159,7 @@ describe("Lesson page", () => {
     mockApi({
       "GET /api/v1/auth/me/": { status: 200, body: USER },
       [`GET /api/v1/lessons/${LESSON_ID}/`]: { status: 200, body: LESSON },
+      [BOARD_URL]: EMPTY_BOARD,
     });
     renderAt(`/lessons/${LESSON_ID}`);
     expect(await screen.findByTestId("excalidraw")).toHaveAttribute("data-theme", "dark");
@@ -165,6 +174,7 @@ describe("Lesson page", () => {
         attempts += 1;
         return attempts === 1 ? envelope("server_error", 500, { retryable: true }) : { status: 200, body: LESSON };
       },
+      [BOARD_URL]: EMPTY_BOARD,
     });
     renderAt(`/lessons/${LESSON_ID}`);
 
@@ -179,6 +189,7 @@ describe("Lesson page", () => {
     mockApi({
       "GET /api/v1/auth/me/": { status: 200, body: USER },
       [`GET /api/v1/lessons/${LESSON_ID}/`]: envelope("not_found", 404),
+      [BOARD_URL]: envelope("not_found", 404),
     });
     renderAt(`/lessons/${LESSON_ID}`);
 
@@ -204,6 +215,7 @@ describe("Lesson page", () => {
     mockApi({
       "GET /api/v1/auth/me/": { status: 200, body: USER },
       [`GET /api/v1/lessons/${LESSON_ID}/`]: { status: 200, body: LESSON },
+      [BOARD_URL]: EMPTY_BOARD,
     });
     renderAt(`/lessons/${LESSON_ID}`);
     await screen.findByTestId("excalidraw");
