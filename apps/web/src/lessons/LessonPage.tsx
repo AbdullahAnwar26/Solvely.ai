@@ -1,6 +1,8 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 import { ApiError } from "../api/client";
+import { fetchBoard } from "./boardApi";
+import type { BoardState } from "./boardSerialize";
 import { fetchLesson, type Lesson } from "./lessonsApi";
 
 // Excalidraw is large: it loads only when a Lesson is opened.
@@ -12,7 +14,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 type State =
   | { status: "loading" }
-  | { status: "ready"; lesson: Lesson }
+  | { status: "ready"; lesson: Lesson; board: BoardState }
   | { status: "notFound" }
   | { status: "error" };
 
@@ -39,11 +41,14 @@ export default function LessonPage() {
 function LoadedLesson({ lessonId }: { lessonId: string }) {
   const [state, setState] = useState<State>({ status: "loading" });
   const [attempt, setAttempt] = useState(0);
+  const [statusSlot, setStatusSlot] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
-    fetchLesson(lessonId, controller.signal).then(
-      (lesson) => setState({ status: "ready", lesson }),
+    // The Board mounts only once its latest revision is loaded, so nothing can be saved over an
+    // unloaded Board. If either request fails the page shows its error state (no saving).
+    Promise.all([fetchLesson(lessonId, controller.signal), fetchBoard(lessonId, controller.signal)]).then(
+      ([lesson, board]) => setState({ status: "ready", lesson, board }),
       (error: unknown) => {
         if (controller.signal.aborted) return;
         setState({ status: error instanceof ApiError && error.status === 404 ? "notFound" : "error" });
@@ -88,12 +93,14 @@ function LoadedLesson({ lessonId }: { lessonId: string }) {
     );
   }
 
-  const { lesson } = state;
+  const { lesson, board } = state;
   return (
     <div className="lesson-workspace">
       <title>{`${lesson.title ?? "Untitled lesson"} · Whiteboard Tutor`}</title>
       <header className="lesson-header">
         <h1 className="lesson-title">{lesson.title}</h1>
+        {/* The Board renders its save status here once it has loaded. */}
+        <div ref={setStatusSlot} className="lesson-header-status" />
       </header>
       <section className="board-region" aria-label="Board">
         <Suspense
@@ -103,7 +110,7 @@ function LoadedLesson({ lessonId }: { lessonId: string }) {
             </p>
           }
         >
-          <Board />
+          <Board lessonId={lessonId} initial={board} statusSlot={statusSlot} />
         </Suspense>
       </section>
     </div>
