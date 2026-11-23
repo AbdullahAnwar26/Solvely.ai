@@ -104,6 +104,7 @@ function statusRegion(): HTMLElement {
 }
 
 beforeEach(() => {
+  window.localStorage.clear();
   h.props = null;
   h.elements = [];
   h.appState.isLoading = false;
@@ -145,7 +146,7 @@ describe("Autosave on the page", () => {
     await screen.findByTestId("excalidraw");
     edit([saved("a", 2)]);
     edit([saved("a", 3)]);
-    expect(statusRegion()).toHaveTextContent("Saved");
+    expect(statusRegion()).toHaveTextContent("Unsaved changes");
 
     await waitFor(() => expect(puts(calls)).toHaveLength(1), { timeout: AUTOSAVE_DEBOUNCE_MS + 2000 });
     expect(statusRegion()).toHaveTextContent("Saving…");

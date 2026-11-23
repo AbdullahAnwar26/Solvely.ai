@@ -139,12 +139,14 @@ describe("delete account dialog", () => {
       [ME]: { status: 200, body: USER },
       [DELETE]: { status: 204 },
     });
+    window.localStorage.setItem("wt.draft.1.abc", "{}");
     const { user, router } = await openDialog();
     await user.type(screen.getByLabelText("Your password"), "correct horse battery");
     await user.click(screen.getByRole("button", { name: "Delete account" }));
     expect(await screen.findByRole("heading", { level: 1, name: "Sign in" })).toBeInTheDocument();
     expect(router.state.location.pathname).toBe("/sign-in");
     expect(screen.getByRole("status")).toHaveTextContent(/deleted/);
+    expect(window.localStorage.getItem("wt.draft.1.abc")).toBeNull();
     expect(calls.find((c) => c.path === "/api/v1/auth/account/delete/")?.body).toEqual({
       password: "correct horse battery",
     });

@@ -31,7 +31,7 @@ vi.mock("../theme/useResolvedTheme", () => ({ useResolvedTheme: () => "light" })
 vi.mock("./boardApi", () => ({ fetchBoard: vi.fn(), saveBoard: vi.fn(() => new Promise(() => undefined)) }));
 
 const EMPTY = { revision: 0, board: { schema_version: 1, elements: [] } };
-const renderBoard = () => render(<Board lessonId="l1" initial={EMPTY} statusSlot={null} />);
+const renderBoard = () => render(<Board userId={null} lessonId="l1" initial={EMPTY} statusSlot={null} />);
 
 h.api = {
   history: { clear: h.historyClear },

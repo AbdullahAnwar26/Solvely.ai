@@ -377,6 +377,21 @@ describe("sign out", () => {
     expect(logout?.headers.get("X-CSRFToken")).toBe("test-token");
   });
 
+  it("removes every device draft on sign-out", async () => {
+    mockApi({ ...signedInMe, "POST /api/v1/auth/logout/": { status: 204 } });
+    window.localStorage.setItem("wt.draft.1.abc", "{}");
+    window.localStorage.setItem("wt.draft.2.def", "{}");
+    window.localStorage.setItem("wt.sidebar.collapsed", "1");
+    const user = userEvent.setup();
+    renderAt("/");
+    await screen.findByRole("heading", { level: 1, name: "Whiteboard Tutor" });
+    await user.click(screen.getByRole("button", { name: "Sign out" }));
+    await screen.findByRole("heading", { level: 1, name: "Sign in" });
+    expect(window.localStorage.getItem("wt.draft.1.abc")).toBeNull();
+    expect(window.localStorage.getItem("wt.draft.2.def")).toBeNull();
+    expect(window.localStorage.getItem("wt.sidebar.collapsed")).toBe("1");
+  });
+
   it("shows a message and stays signed in when logout fails", async () => {
     mockApi({ ...signedInMe, "POST /api/v1/auth/logout/": new TypeError("offline") });
     const user = userEvent.setup();
@@ -411,13 +426,16 @@ describe("browser storage", () => {
     await user.click(screen.getByRole("button", { name: "Sign in" }));
     await screen.findByRole("heading", { level: 1, name: "Whiteboard Tutor" });
 
-    // The only allowed write is the non-sensitive theme hint: key wt.theme, value light|dark|system.
+    // Allowed writes: the non-sensitive theme hint (wt.theme: light|dark|system), the sidebar hint
+    // (wt.sidebar...) and device drafts (wt.draft.*, board data only, covered in draftRecovery.test).
+    // None of these flows draws on a Board, so only the theme hint is expected here.
     for (const [key, value] of setItem.mock.calls) {
-      expect(key).toBe("wt.theme");
-      expect(["light", "dark", "system"]).toContain(value);
+      expect(String(key)).toMatch(/^wt.(theme|sidebar.[w.]+|draft..+)$/);
+      if (key === "wt.theme") expect(["light", "dark", "system"]).toContain(value);
     }
     const keys = Array.from({ length: window.localStorage.length }, (_, i) => window.localStorage.key(i));
-    expect(keys.every((k) => k === "wt.theme")).toBe(true);
+    expect(keys.every((k) => /^wt.(theme|sidebar.[w.]+|draft..+)$/.test(k ?? ""))).toBe(true);
+    expect(JSON.stringify(setItem.mock.calls)).not.toMatch(/maya@example.com|passphrase|token/i);
     expect(["light", "dark", "system", null]).toContain(window.localStorage.getItem("wt.theme"));
     expect(window.sessionStorage).toHaveLength(0);
   });
