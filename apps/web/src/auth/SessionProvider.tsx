@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { ApiError } from "../api/client";
+import { clearAllDrafts } from "../lessons/draftStorage";
 import { fetchCurrentUser, logout, NETWORK_MESSAGE, UNEXPECTED_MESSAGE } from "./authApi";
 import { SessionContext, type SessionContextValue, type SessionState, type SessionUser } from "./SessionContext";
 
@@ -33,6 +34,12 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     return () => controller.abort();
   }, [attempt]);
 
+  // Device drafts never outlive the session: removed whenever the Learner is signed out (this runs
+  // after the Board has unmounted and flushed, so nothing can be written back afterwards).
+  useEffect(() => {
+    if (state.status === "signedOut") clearAllDrafts();
+  }, [state.status]);
+
   const signIn = useCallback((user: SessionUser) => {
     setSignedOutByUser(false);
     setAccountDeleted(false);
@@ -41,11 +48,13 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const signOut = useCallback(async () => {
     await logout();
+    clearAllDrafts();
     setSignedOutByUser(true);
     setState({ status: "signedOut" });
   }, []);
 
   const endSessionAfterDeletion = useCallback(() => {
+    clearAllDrafts();
     setSignedOutByUser(true);
     setAccountDeleted(true);
     setState({ status: "signedOut" });
