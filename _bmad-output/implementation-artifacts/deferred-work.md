@@ -39,3 +39,8 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-2-3-autosave-revisions.md`
   summary: Story 2.4 must also cover: viewport-only changes are not persisted until the next content save; EXPERIENCE.md "Keep mine as a copy" on conflict needs a duplicate endpoint (Story 6.2); offline banner and save-on-reconnect are not built
   evidence: gaps listed in the Story 2.3 report.
+- RESOLVED 2026-10-29 (Story 2.4): the save label now flips to "Unsaved changes" as soon as a real content change happens, using a cheap element-version sum (no serialization); pan, zoom and selection do not flip it.
+- RESOLVED 2026-10-29 (Story 2.4): viewport-only changes are saved with the next content save (never alone) and the saved viewport is restored on open; after a failed save plus reload the last good revision loads and the device-local draft is offered back (Restore or Discard, never automatic). Still open: "Keep mine as a copy" (Story 6.2 duplicate endpoint) and the offline banner with save-on-reconnect.
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-4-resume-and-recovery.md`
+  summary: Consider a confirm step before "Restore" replaces edits made after opening, and revisit per-tab draft keys so a second tab gets its own protection; review how noisy the "Unsaved changes" announcement is with a screen reader (Story 7.2)
+  evidence: accepted judgment calls in the Story 2.4 report.
