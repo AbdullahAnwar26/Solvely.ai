@@ -61,6 +61,20 @@ export function sceneFingerprint(elements: readonly SceneElement[]): string {
   return out;
 }
 
+/**
+ * Cheap dirty check for `onChange` (Story 2.4): the sum of `version + 1` over live savable
+ * elements. O(n), no strings and no allocation per element. Selection and viewport changes never
+ * change it; any add, edit or delete does (a delete drops the element's term).
+ */
+export function contentToken(elements: readonly SceneElement[]): number {
+  let sum = 0;
+  for (const el of elements) {
+    if (el.isDeleted || !SAVED_ELEMENT_TYPES.has(el.type)) continue;
+    sum += el.version + 1;
+  }
+  return sum;
+}
+
 function finite(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value);
 }
@@ -88,6 +102,9 @@ export function initialAppState(board: BoardPayload): SceneAppState & { viewBack
     viewBackgroundColor: saved.viewBackgroundColor ?? "transparent",
     ...(finite(saved.scrollX) ? { scrollX: saved.scrollX } : {}),
     ...(finite(saved.scrollY) ? { scrollY: saved.scrollY } : {}),
-    ...(saved.zoom && finite(saved.zoom.value) ? { zoom: { value: saved.zoom.value } } : {}),
+    // A zoom outside Excalidraw's range is ignored: default view.
+    ...(saved.zoom && finite(saved.zoom.value) && saved.zoom.value >= 0.1 && saved.zoom.value <= 30
+      ? { zoom: { value: saved.zoom.value } }
+      : {}),
   };
 }

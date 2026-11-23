@@ -255,3 +255,119 @@ describe("unsaved changes and leaving", () => {
     expect(s.requests[1]).toMatchObject({ base_revision: 1, board: { elements: [{ id: "b" }] } });
   });
 });
+
+describe("unsaved state and device draft (Story 2.4)", () => {
+  function withDraft(initial: { revision: number; fingerprint: string; token?: number }) {
+    const draft = { request: vi.fn(), flush: vi.fn(), clear: vi.fn() };
+    let content = "";
+    let token = initial.token ?? 0;
+    const views: AutosaveView[] = [];
+    const save = vi.fn(() => Promise.resolve({ revision: initial.revision + 1 }));
+    const controller = new AutosaveController(
+      {
+        save,
+        snapshot: () => ({ board: { schema_version: 1, elements: [{ id: content }] }, fingerprint: content, token }),
+        newSaveId: () => "id",
+        onView: (v) => views.push(v),
+        draft,
+      },
+      initial,
+    );
+    return {
+      controller,
+      draft,
+      save,
+      views,
+      change(nextContent: string, nextToken: number) {
+        content = nextContent;
+        token = nextToken;
+        controller.notifyChange(nextToken);
+      },
+    };
+  }
+
+  it("flips to unsaved at once on a different token, before any save starts", () => {
+    const s = withDraft({ revision: 1, fingerprint: "", token: 5 });
+    s.change("a", 6);
+    expect(s.controller.currentStatus).toBe("unsaved");
+    expect(s.save).not.toHaveBeenCalled();
+    expect(s.draft.request).toHaveBeenCalled();
+    expect(s.controller.hasUnsavedChanges()).toBe(true);
+  });
+
+  it("a same-token change (pan, zoom, selection) neither flips the status nor arms a save", async () => {
+    const s = withDraft({ revision: 1, fingerprint: "", token: 5 });
+    s.change("", 5);
+    expect(s.controller.currentStatus).toBe("saved");
+    expect(s.draft.request).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(AUTOSAVE_DEBOUNCE_MS * 2);
+    expect(s.save).not.toHaveBeenCalled();
+  });
+
+  it("goes unsaved, saving, saved and clears the draft once confirmed", async () => {
+    const s = withDraft({ revision: 1, fingerprint: "", token: 5 });
+    s.change("a", 6);
+    await vi.advanceTimersByTimeAsync(AUTOSAVE_DEBOUNCE_MS);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(s.views.map((v) => v.status)).toEqual(["unsaved", "saving", "saved"]);
+    expect(s.draft.clear).toHaveBeenCalled();
+    // The token of the saved content is the new baseline.
+    s.change("a", 6);
+    expect(s.controller.currentStatus).toBe("saved");
+  });
+
+  it("returns to saved (and clears the draft) when the content is undone to the saved state", async () => {
+    const s = withDraft({ revision: 1, fingerprint: "", token: 5 });
+    s.change("a", 6);
+    s.change("", 5);
+    await vi.advanceTimersByTimeAsync(AUTOSAVE_DEBOUNCE_MS);
+    expect(s.controller.currentStatus).toBe("saved");
+    expect(s.save).not.toHaveBeenCalled();
+    expect(s.draft.clear).toHaveBeenCalled();
+  });
+
+  it("keeps the draft requested through failure and conflict, and does not clear it", async () => {
+    const draft = { request: vi.fn(), flush: vi.fn(), clear: vi.fn() };
+    const save = vi.fn(() => Promise.reject(conflict()));
+    let token = 0;
+    const controller = new AutosaveController(
+      {
+        save,
+        snapshot: () => ({ board: { schema_version: 1, elements: [] }, fingerprint: String(token), token }),
+        newSaveId: () => "id",
+        onView: () => undefined,
+        draft,
+      },
+      { revision: 0, fingerprint: "0", token: 0 },
+    );
+    token = 1;
+    controller.notifyChange(1);
+    await vi.advanceTimersByTimeAsync(AUTOSAVE_DEBOUNCE_MS);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(controller.currentStatus).toBe("conflict");
+    draft.request.mockClear();
+    token = 2;
+    controller.notifyChange(2);
+    expect(draft.request).toHaveBeenCalled();
+    expect(draft.clear).not.toHaveBeenCalled();
+  });
+
+  it("markUnsaved shows unsaved and lets autosave persist replaced content", async () => {
+    const s = withDraft({ revision: 1, fingerprint: "", token: 5 });
+    s.controller.markUnsaved();
+    expect(s.controller.currentStatus).toBe("unsaved");
+    expect(s.draft.request).toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(AUTOSAVE_DEBOUNCE_MS);
+    // Same fingerprint as saved: nothing to send, back to saved.
+    expect(s.controller.currentStatus).toBe("saved");
+  });
+
+  it("flushes the draft when leaving with a pending change and on flushDraft", () => {
+    const s = withDraft({ revision: 1, fingerprint: "", token: 5 });
+    s.change("a", 6);
+    s.controller.flushDraft();
+    expect(s.draft.flush).toHaveBeenCalledTimes(1);
+    s.controller.leave();
+    expect(s.draft.flush).toHaveBeenCalledTimes(2);
+  });
+});

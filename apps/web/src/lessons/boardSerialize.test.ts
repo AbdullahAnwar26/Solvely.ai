@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { initialAppState, sceneFingerprint, serializeBoard, type SceneElement } from "./boardSerialize";
+import { contentToken, initialAppState, sceneFingerprint, serializeBoard, type SceneElement } from "./boardSerialize";
 
 const el = (id: string, over: Partial<SceneElement> & Record<string, unknown> = {}) => ({
   id,
@@ -66,5 +66,27 @@ describe("initialAppState", () => {
         app_state: { scrollX: 3, scrollY: 4, zoom: { value: 2 }, viewBackgroundColor: "white" },
       }),
     ).toEqual({ viewBackgroundColor: "white", scrollX: 3, scrollY: 4, zoom: { value: 2 } });
+  });
+});
+
+describe("contentToken", () => {
+  it("changes on add, edit and delete but not on selection or viewport", () => {
+    const base = contentToken([el("a"), el("b")]);
+    expect(contentToken([el("a"), el("b")])).toBe(base);
+    expect(contentToken([el("a", { version: 2 }), el("b")])).not.toBe(base);
+    expect(contentToken([el("a")])).not.toBe(base);
+    expect(contentToken([el("a"), el("b"), el("c", { isDeleted: true })])).toBe(base);
+    expect(contentToken([el("a"), el("b"), el("i", { type: "image" })])).toBe(base);
+  });
+});
+
+describe("initialAppState viewport validation", () => {
+  it("ignores a zoom outside Excalidraw's range", () => {
+    expect(initialAppState({ schema_version: 1, elements: [], app_state: { zoom: { value: 0 } } })).not.toHaveProperty(
+      "zoom",
+    );
+    expect(initialAppState({ schema_version: 1, elements: [], app_state: { zoom: { value: 99 } } })).not.toHaveProperty(
+      "zoom",
+    );
   });
 });

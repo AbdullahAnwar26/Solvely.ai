@@ -17,6 +17,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import { ApiError } from "../api/client";
 import { REVISION_CONFLICT, type BoardSaveRequest, type BoardSaveResponse } from "./boardApi";
 import type { BoardPayload } from "./boardSerialize";
+import { DraftWriter } from "./draftStorage";
 
 export const AUTOSAVE_DEBOUNCE_MS = 1500;
 export const AUTOSAVE_RETRY_BASE_MS = 2000;
@@ -24,9 +25,14 @@ export const AUTOSAVE_RETRY_MAX_MS = 16000;
 /** Automatic retries after a failed save before the Learner must press Retry. */
 export const AUTOSAVE_MAX_AUTO_RETRIES = 3;
 
-export type SaveStatus = "saved" | "saving" | "error" | "conflict";
+/** "unsaved": a real content change happened and no save has started yet (Story 2.4). */
+export type SaveStatus = "saved" | "unsaved" | "saving" | "error" | "conflict";
 
-export type Snapshot = { board: BoardPayload; fingerprint: string };
+/** `token` is the cheap `contentToken` of the scene (optional: only used for dirty detection). */
+export type Snapshot = { board: BoardPayload; fingerprint: string; token?: number };
+
+/** The device-local draft, as seen by the controller (see `DraftWriter`). */
+export type DraftSink = { request: () => void; flush: () => void; clear: () => void };
 
 export type AutosaveView = {
   status: SaveStatus;
@@ -45,6 +51,7 @@ export type AutosaveDeps = {
   snapshot: () => Snapshot | null;
   newSaveId: () => string;
   onView: (view: AutosaveView) => void;
+  draft?: DraftSink;
   timers?: Timers;
 };
 
@@ -80,6 +87,7 @@ export class AutosaveController {
 
   private revision: number;
   private savedFingerprint: string;
+  private savedToken: number | undefined;
   private status: SaveStatus = "saved";
   private timer: number | null = null;
   private retryScheduled = false;
@@ -95,7 +103,7 @@ export class AutosaveController {
 
   constructor(
     deps: AutosaveDeps,
-    initial: { revision: number; fingerprint: string },
+    initial: { revision: number; fingerprint: string; token?: number },
     options: AutosaveOptions = {},
   ) {
     this.deps = deps;
@@ -106,6 +114,7 @@ export class AutosaveController {
     this.maxAutoRetries = options.maxAutoRetries ?? AUTOSAVE_MAX_AUTO_RETRIES;
     this.revision = initial.revision;
     this.savedFingerprint = initial.fingerprint;
+    this.savedToken = initial.token;
   }
 
   get currentRevision() {
@@ -116,12 +125,38 @@ export class AutosaveController {
     return this.status;
   }
 
-  /** The scene changed. Cheap: only (re)arms the debounce timer. */
-  notifyChange() {
-    if (this.disposed || this.paused || this.status === "conflict") return;
-    // While failing, the retry schedule (or the manual Retry) decides when to try again.
-    if (this.status === "error") return;
+  /**
+   * The scene changed. Cheap: compares the content token and (re)arms the debounce timer. A
+   * different token while "saved" flips the label to "unsaved" at once; a pan, zoom or selection
+   * (same token) changes nothing and starts no save.
+   */
+  notifyChange(token?: number) {
+    if (this.disposed || this.paused) return;
+    if (this.status === "conflict" || this.status === "error") {
+      // While failing, the retry schedule (or the manual Retry) decides when to try again, but
+      // the content on this device is still unsaved.
+      this.deps.draft?.request();
+      return;
+    }
+    if (this.status === "saved" && token !== undefined) {
+      if (token === this.savedToken && this.timer === null) return;
+      if (token !== this.savedToken) this.setStatus("unsaved");
+    }
+    if (this.status !== "saved") this.deps.draft?.request();
     this.arm(this.debounceMs);
+  }
+
+  /** Content was replaced from outside (draft restored): treat it as an unsaved change. */
+  markUnsaved() {
+    if (this.disposed || this.paused || this.status === "conflict" || this.status === "error") return;
+    if (this.status === "saved") this.setStatus("unsaved");
+    this.deps.draft?.request();
+    this.arm(this.debounceMs);
+  }
+
+  /** Write any pending device draft now (pagehide, beforeunload). */
+  flushDraft() {
+    this.deps.draft?.flush();
   }
 
   /** Learner pressed Retry: try now, with a fresh automatic-retry budget. */
@@ -139,10 +174,11 @@ export class AutosaveController {
   }
 
   /** A new revision was loaded into the scene: start again from it, clean. */
-  reset(revision: number, fingerprint: string) {
+  reset(revision: number, fingerprint: string, token?: number) {
     this.clearTimer();
     this.revision = revision;
     this.savedFingerprint = fingerprint;
+    this.savedToken = token;
     this.lastAttempt = null;
     this.failures = 0;
     this.manualOnly = false;
@@ -168,6 +204,7 @@ export class AutosaveController {
     const pending = this.timer !== null || this.queued;
     this.clearTimer();
     this.disposed = true;
+    if (pending) this.deps.draft?.flush();
     if (!pending || this.paused || this.status === "conflict") return;
     const snap = this.deps.snapshot();
     if (!snap || snap.fingerprint === this.savedFingerprint) return;
@@ -203,6 +240,8 @@ export class AutosaveController {
 
   private setStatus(status: SaveStatus) {
     this.status = status;
+    // Confirmed and nothing newer waiting: the device draft is no longer needed.
+    if (status === "saved" && this.timer === null && !this.queued) this.deps.draft?.clear();
     if (!this.disposed) this.deps.onView({ status, retrying: status === "error" && this.retryScheduled });
   }
 
@@ -220,6 +259,7 @@ export class AutosaveController {
     }
     if (snap.fingerprint === this.savedFingerprint) {
       this.lastAttempt = null;
+      if (snap.token !== undefined) this.savedToken = snap.token;
       if (this.status !== "saved") this.setStatus("saved");
       return;
     }
@@ -247,6 +287,7 @@ export class AutosaveController {
     this.inFlight = false;
     this.revision = revision;
     this.savedFingerprint = snap.fingerprint;
+    if (snap.token !== undefined) this.savedToken = snap.token;
     this.lastAttempt = null;
     this.failures = 0;
     this.manualOnly = false;
@@ -254,6 +295,7 @@ export class AutosaveController {
       const last = this.finalSnapshot;
       this.finalSnapshot = null;
       if (last && last.fingerprint !== this.savedFingerprint) this.send(last);
+      else this.deps.draft?.clear();
       return;
     }
     this.setStatus("saved");
@@ -289,10 +331,16 @@ export class AutosaveController {
 // ---- React hook ----
 
 export type UseAutosave = AutosaveView & {
-  notifyChange: () => void;
+  notifyChange: (token?: number) => void;
   retry: () => void;
+  /** Content was replaced from outside (draft restored): show it as unsaved and let autosave persist it. */
+  markUnsaved: () => void;
+  /** The revision the controller currently builds on. */
+  currentRevision: () => number;
   /** Pause saving, load new content with `apply`, then restart clean from its revision. */
-  reloadWith: (apply: () => { revision: number; fingerprint: string }) => void;
+  reloadWith: (apply: () => { revision: number; fingerprint: string; token?: number }) => void;
+  /** Hold or release the device draft (a recovery banner is showing); `adopt` takes over the stored one. */
+  holdDraft: (on: boolean, adopt?: boolean) => void;
 };
 
 /**
@@ -304,6 +352,9 @@ export function useAutosave(
   options: {
     initialRevision: number;
     initialFingerprint: string;
+    initialToken?: number;
+    /** Enables the device-local draft for this user and Lesson. */
+    draftScope?: { userId: number | string; lessonId: string };
     save: AutosaveDeps["save"];
     snapshot: AutosaveDeps["snapshot"];
     newSaveId?: () => string;
@@ -311,6 +362,7 @@ export function useAutosave(
 ): UseAutosave {
   const [view, setView] = useState<AutosaveView>({ status: "saved", retrying: false });
   const controllerRef = useRef<AutosaveController | null>(null);
+  const writerRef = useRef<DraftWriter | null>(null);
   // Keep the latest callbacks without recreating the controller.
   const optionsRef = useRef(options);
   useLayoutEffect(() => {
@@ -320,20 +372,38 @@ export function useAutosave(
   // Layout effect so `leave()` runs before Excalidraw unmounts and the scene is still readable.
   useLayoutEffect(() => {
     const opts = optionsRef.current;
-    const controller = new AutosaveController(
+    let controller: AutosaveController | null = null;
+    const scope = opts.draftScope;
+    const writer = scope
+      ? new DraftWriter({
+          ...scope,
+          read: () => {
+            const snap = optionsRef.current.snapshot();
+            return snap && controller ? { board: snap.board, revision: controller.currentRevision } : null;
+          },
+        })
+      : null;
+    writerRef.current = writer;
+    const created = new AutosaveController(
       {
         save: (body) => optionsRef.current.save(body),
         snapshot: () => optionsRef.current.snapshot(),
         newSaveId: () => (optionsRef.current.newSaveId ?? (() => crypto.randomUUID()))(),
         onView: setView,
+        draft: writer
+          ? { request: () => writer.request(), flush: () => writer.flush(), clear: () => writer.clear() }
+          : undefined,
       },
-      { revision: opts.initialRevision, fingerprint: opts.initialFingerprint },
+      { revision: opts.initialRevision, fingerprint: opts.initialFingerprint, token: opts.initialToken },
       opts,
     );
-    controllerRef.current = controller;
+    controller = created;
+    controllerRef.current = created;
     return () => {
-      controller.leave();
-      if (controllerRef.current === controller) controllerRef.current = null;
+      created.leave();
+      writer?.dispose();
+      if (controllerRef.current === created) controllerRef.current = null;
+      if (writerRef.current === writer) writerRef.current = null;
     };
     // The controller lives as long as the Board; later option changes go through optionsRef.
   }, []);
@@ -345,19 +415,33 @@ export function useAutosave(
       // Older browsers need returnValue set to show the prompt.
       event.returnValue = "";
     };
+    // The device draft is written before the page can go away.
+    const onLeaving = () => controllerRef.current?.flushDraft();
     window.addEventListener("beforeunload", onBeforeUnload);
-    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+    window.addEventListener("pagehide", onLeaving);
+    window.addEventListener("beforeunload", onLeaving);
+    return () => {
+      window.removeEventListener("beforeunload", onBeforeUnload);
+      window.removeEventListener("pagehide", onLeaving);
+      window.removeEventListener("beforeunload", onLeaving);
+    };
   }, []);
 
-  const notifyChange = useCallback(() => controllerRef.current?.notifyChange(), []);
+  const notifyChange = useCallback((token?: number) => controllerRef.current?.notifyChange(token), []);
+  const markUnsaved = useCallback(() => controllerRef.current?.markUnsaved(), []);
+  const currentRevision = useCallback(() => controllerRef.current?.currentRevision ?? 0, []);
+  const holdDraft = useCallback((on: boolean, adopt = false) => {
+    writerRef.current?.hold(on);
+    if (adopt) writerRef.current?.adopt();
+  }, []);
   const retry = useCallback(() => controllerRef.current?.retry(), []);
-  const reloadWith = useCallback((apply: () => { revision: number; fingerprint: string }) => {
+  const reloadWith = useCallback((apply: () => { revision: number; fingerprint: string; token?: number }) => {
     const c = controllerRef.current;
     if (!c) return;
     c.pause();
     const loaded = apply();
-    c.reset(loaded.revision, loaded.fingerprint);
+    c.reset(loaded.revision, loaded.fingerprint, loaded.token);
   }, []);
 
-  return { ...view, notifyChange, retry, reloadWith };
+  return { ...view, notifyChange, retry, markUnsaved, currentRevision, reloadWith, holdDraft };
 }
