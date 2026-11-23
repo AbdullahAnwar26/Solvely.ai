@@ -1,6 +1,6 @@
 # Push plan: spreading commits over 3 weeks
 
-Last updated: 2026-10-29 (after Story 2.3; 29 commits queued, none pushed). Planning window: Fri 2026-10-30 to Thu 2026-11-19 (21 days).
+Last updated: 2026-10-29 (after Story 2.4, Epic 2 complete; 36 commits queued, none pushed). Planning window: Fri 2026-10-30 to Thu 2026-11-19 (21 days).
 
 ## How this works (read once)
 
@@ -72,7 +72,14 @@ The SHA is for reference only; replay order is the order below.
 | 26 | e86d569 | feat(web): show save status, handle conflicts and load the latest revision on open | Story 2.3 | Fri Nov 6 |
 | 27 | 73c616a | test(web): cover serialization, the autosave state machine and the page-level save flow | Story 2.3 | Fri Nov 6 |
 | 28 | fe3590d | docs: close story 2.3 and log autosave polish and recovery follow-ups | Story 2.3 | Sat Nov 7 |
-| 29 | (queued) | docs: update the push plan with the story 2.3 commits | tooling | Sat Nov 7 |
+| 29 | e2922ce | docs: update the push plan with the story 2.3 commits | tooling | Sat Nov 7 |
+| 30 | 789e628 | feat(web): add validated device-local draft storage with a throttled writer | Story 2.4 | Sun Nov 8 |
+| 31 | 03b5f16 | feat(web): add cheap dirty detection, the unsaved state and a safe viewport fallback | Story 2.4 | Sun Nov 8 |
+| 32 | 39645c1 | feat(web): offer draft recovery and restore the saved viewport on open | Story 2.4 | Mon Nov 9 |
+| 33 | 6c4f275 | feat(web): remove local drafts on sign-out and account deletion | Story 2.4 | Mon Nov 9 |
+| 34 | 8d084d3 | test(web): cover draft recovery, storage rules and the unsaved flow | Story 2.4 | Mon Nov 9 |
+| 35 | 2347794 | docs: close story 2.4 and mark epic 2 complete | Story 2.4 | Mon Nov 9 |
+| 36 | (queued) | docs: update the push plan with the story 2.4 commits | tooling | Tue Nov 10 |
 
 ## Calendar
 
@@ -89,9 +96,9 @@ The SHA is for reference only; replay order is the order below.
 | 2026-11-05 | Thu | 4 | Planned | Queue #20 to #23: Story 2.3 board save/load API, isolation harness, revision tests |
 | 2026-11-06 | Fri | 4 | Planned | Queue #24 to #27: shared API types, board serialization, autosave state machine, save status UI |
 | 2026-11-07 | Sat | 2 | Planned | Queue #28 to #29: Story 2.3 web tests, docs, plan update |
-| 2026-11-08 | Sun | 2 | Forecast | Story 2.4: resume after refresh, unsaved-change label polish, viewport persistence |
-| 2026-11-09 | Mon | 4 | Forecast | Story 2.4 tests and Epic 2 close-out docs; Epic 3 start: AI provider port and FakeProvider |
-| 2026-11-10 | Tue | 4 | Forecast | Story 3.2 tests; Story 3.3 deterministic layout engine |
+| 2026-11-08 | Sun | 2 | Planned | Queue #30 to #31: Story 2.4 draft storage, dirty detection and unsaved state |
+| 2026-11-09 | Mon | 4 | Planned | Queue #32 to #35: Story 2.4 draft recovery UI, draft cleanup on sign-out, tests, Epic 2 close-out docs |
+| 2026-11-10 | Tue | 4 | Planned + Forecast | Queue #36 (plan update); Epic 3 start: Story 3.1 AI provider port, FakeProvider and Gemini adapter |
 | 2026-11-11 | Wed | 4 | Forecast | Story 3.3 tests; Story 3.4 daily Lesson Allowance |
 | 2026-11-12 | Thu | 4 | Forecast | Story 3.4 tests; Story 3.5 Explain and Solve generation |
 | 2026-11-13 | Fri | 4 | Forecast | Story 3.5 tests; Story 3.6 step player |
