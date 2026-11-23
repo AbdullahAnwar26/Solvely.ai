@@ -1,6 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 import { ApiError } from "../api/client";
+import { useSession } from "../auth/SessionContext";
 import { fetchBoard } from "./boardApi";
 import type { BoardState } from "./boardSerialize";
 import { fetchLesson, type Lesson } from "./lessonsApi";
@@ -42,6 +43,8 @@ function LoadedLesson({ lessonId }: { lessonId: string }) {
   const [state, setState] = useState<State>({ status: "loading" });
   const [attempt, setAttempt] = useState(0);
   const [statusSlot, setStatusSlot] = useState<HTMLElement | null>(null);
+  const { state: session } = useSession();
+  const userId = session.status === "signedIn" ? session.user.id : null;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -110,7 +113,7 @@ function LoadedLesson({ lessonId }: { lessonId: string }) {
             </p>
           }
         >
-          <Board lessonId={lessonId} initial={board} statusSlot={statusSlot} />
+          <Board lessonId={lessonId} userId={userId} initial={board} statusSlot={statusSlot} />
         </Suspense>
       </section>
     </div>

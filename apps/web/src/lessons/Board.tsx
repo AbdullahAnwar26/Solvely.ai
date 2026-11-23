@@ -7,9 +7,10 @@ import { useResolvedTheme } from "../theme/useResolvedTheme";
 import { fetchBoard, saveBoard } from "./boardApi";
 import "./board.css";
 import BoardControls from "./BoardControls";
-import { initialAppState, sceneFingerprint, serializeBoard, type BoardState } from "./boardSerialize";
+import { contentToken, initialAppState, sceneFingerprint, serializeBoard, type BoardState } from "./boardSerialize";
+import { clearDraft, evaluateDraft, readDraft, type DraftOffer } from "./draftStorage";
 import { tagLearnerElements } from "./originTag";
-import { ConflictAlert, SaveStatus } from "./SaveStatus";
+import { ConflictAlert, DraftBanner, SaveStatus } from "./SaveStatus";
 import { useAutosave, type Snapshot } from "./useAutosave";
 
 // Self-host Excalidraw's fonts (committed under public/excalidraw-assets) so drawing text never
@@ -21,6 +22,8 @@ const UI_OPTIONS = { tools: { image: false } } as const;
 
 type Props = {
   lessonId: string;
+  /** The signed-in Learner, or null: device drafts are kept per user and never without one. */
+  userId: number | null;
   /** The latest saved revision, loaded before the Board mounts. */
   initial: BoardState;
   /** Header element the save status renders into (the Board header lives in LessonPage). */
@@ -47,7 +50,7 @@ function restoreBoard(board: BoardState["board"]): InitialData {
  * CSS stay out of the main bundle. It mounts only after the latest revision was loaded, so
  * autosave can never run over an unloaded Board.
  */
-export default function Board({ lessonId, initial, statusSlot }: Props) {
+export default function Board({ lessonId, userId, initial, statusSlot }: Props) {
   const theme = useResolvedTheme();
   const apiRef = useRef<ExcalidrawImperativeAPI | null>(null);
   const [api, setApi] = useState<ExcalidrawImperativeAPI | null>(null);
@@ -55,6 +58,13 @@ export default function Board({ lessonId, initial, statusSlot }: Props) {
   // Restored once: Excalidraw reads initialData only on mount.
   const [initialData] = useState(() => restoreBoard(initial.board));
   const [hasContent, setHasContent] = useState(() => initialData.elements.some((el) => !el.isDeleted));
+  const surfaceRef = useRef<HTMLDivElement>(null);
+  // A device draft left by an earlier session: offered back, never applied automatically.
+  const [offer, setOffer] = useState<DraftOffer>(() =>
+    userId === null
+      ? { kind: "none" }
+      : evaluateDraft(readDraft(userId, lessonId), { revision: initial.revision, elements: initial.board.elements }),
+  );
 
   const snapshot = useCallback((): Snapshot | null => {
     const current = apiRef.current;
@@ -63,7 +73,11 @@ export default function Board({ lessonId, initial, statusSlot }: Props) {
     // Not while the initial scene is loading or an element is mid-draw or mid-typing.
     if (app.isLoading || app.newElement || app.editingTextElement || app.multiElement) return null;
     const elements = current.getSceneElements();
-    return { board: serializeBoard(elements, app), fingerprint: sceneFingerprint(elements) };
+    return {
+      board: serializeBoard(elements, app),
+      fingerprint: sceneFingerprint(elements),
+      token: contentToken(elements),
+    };
   }, []);
 
   const save = useCallback(
@@ -74,10 +88,59 @@ export default function Board({ lessonId, initial, statusSlot }: Props) {
   const autosave = useAutosave({
     initialRevision: initial.revision,
     initialFingerprint: sceneFingerprint(initialData.elements),
+    initialToken: contentToken(initialData.elements),
+    draftScope: userId === null ? undefined : { userId, lessonId },
     save,
     snapshot,
   });
-  const { notifyChange } = autosave;
+  const { notifyChange, holdDraft, markUnsaved, currentRevision } = autosave;
+
+  // On open: a draft equal to the server content is dropped; an offered draft is held so autosave
+  // can neither overwrite nor delete it until the Learner chooses.
+  useEffect(() => {
+    if (userId === null) return;
+    if (offer.kind === "none") {
+      if (offer.equal) clearDraft(userId, lessonId);
+    } else {
+      holdDraft(true);
+    }
+    // Runs once for the offer found on open.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const closeOffer = useCallback(() => {
+    holdDraft(false);
+    setOffer({ kind: "none" });
+    // The banner's buttons are gone: hand focus back to the Board instead of losing it.
+    surfaceRef.current?.querySelector<HTMLElement>(".excalidraw")?.focus();
+  }, [holdDraft]);
+
+  const discardDraft = useCallback(() => {
+    if (userId !== null) clearDraft(userId, lessonId);
+    closeOffer();
+  }, [userId, lessonId, closeOffer]);
+
+  const restoreDraft = useCallback(() => {
+    const current = apiRef.current;
+    if (offer.kind !== "restore" || !current) return;
+    // The Lesson moved on while the banner was open: restoring would overwrite newer work.
+    if (currentRevision() !== offer.draft.base_revision) {
+      setOffer({ kind: "stale", draft: offer.draft });
+      return;
+    }
+    const restored = restoreBoard(offer.draft.board);
+    current.updateScene({
+      elements: restored.elements,
+      appState: restored.appState as never,
+      captureUpdate: CaptureUpdateAction.NEVER,
+    });
+    holdDraft(false, true);
+    // Shown as unsaved; autosave persists it from the current base revision (409 still applies).
+    markUnsaved();
+    setOffer({ kind: "none" });
+    current.history.clear();
+    surfaceRef.current?.querySelector<HTMLElement>(".excalidraw")?.focus();
+  }, [offer, currentRevision, holdDraft, markUnsaved]);
 
   useEffect(
     () => () => {
@@ -109,7 +172,7 @@ export default function Board({ lessonId, initial, statusSlot }: Props) {
       const live = elements.some((el) => !el.isDeleted);
       setHasContent((h) => (h === live ? h : live));
       // Cheap: only re-arms the debounce timer; the scene is read when it fires.
-      if (!appState.isLoading) notifyChange();
+      if (!appState.isLoading) notifyChange(contentToken(elements));
 
       const current = apiRef.current;
       // Wait until the element being drawn or typed is committed before touching the scene.
@@ -141,7 +204,11 @@ export default function Board({ lessonId, initial, statusSlot }: Props) {
       });
       // Undo must not bring back the discarded local changes.
       current.history.clear();
-      return { revision: latest.revision, fingerprint: sceneFingerprint(restored.elements) };
+      return {
+        revision: latest.revision,
+        fingerprint: sceneFingerprint(restored.elements),
+        token: contentToken(restored.elements),
+      };
     });
     return true;
   }, [lessonId, reloadWith]);
@@ -154,8 +221,11 @@ export default function Board({ lessonId, initial, statusSlot }: Props) {
           statusSlot,
         )}
       {autosave.status === "conflict" && <ConflictAlert onReload={reloadLatest} />}
+      {(offer.kind === "restore" || offer.kind === "stale") && (
+        <DraftBanner kind={offer.kind} onRestore={restoreDraft} onDiscard={discardDraft} />
+      )}
       <BoardControls api={api} zoom={zoom} hasContent={hasContent} />
-      <div className="board-surface">
+      <div className="board-surface" ref={surfaceRef}>
         <Excalidraw
           excalidrawAPI={handleApi}
           onChange={handleChange}

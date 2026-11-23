@@ -3,6 +3,7 @@ import type { SaveStatus as Status } from "./useAutosave";
 
 const LABEL: Record<Status, string> = {
   saved: "Saved",
+  unsaved: "Unsaved changes",
   saving: "Saving…",
   error: "Not saved",
   conflict: "Conflict",
@@ -20,7 +21,9 @@ export function SaveStatus({ status, retrying, onRetry }: { status: Status; retr
   const [announcement, setAnnouncement] = useState("");
   if (status !== previous) {
     setPrevious(status);
-    if (status === "error" && !failedBefore) {
+    if (status === "unsaved") {
+      setAnnouncement("Unsaved changes.");
+    } else if (status === "error" && !failedBefore) {
       setFailedBefore(true);
       setAnnouncement("Not saved. Your changes are still on this page.");
     } else if (status === "conflict") {
@@ -48,6 +51,40 @@ export function SaveStatus({ status, retrying, onRetry }: { status: Status; retr
 }
 
 const FOCUSABLE = "button:not([disabled])";
+
+/**
+ * Non-blocking banner about a device-local draft (Story 2.4). "restore": the draft is based on the
+ * version that is open, so it can be restored or discarded. "stale": the Lesson changed elsewhere
+ * since, so the draft can't be merged and can only be discarded (never restored automatically).
+ * A polite status region: it announces itself without taking focus.
+ */
+export function DraftBanner({
+  kind,
+  onRestore,
+  onDiscard,
+}: {
+  kind: "restore" | "stale";
+  onRestore: () => void;
+  onDiscard: () => void;
+}) {
+  return (
+    <div className="board-conflict board-recovery" role="status" aria-live="polite" data-kind={kind}>
+      <p className="board-conflict-text">
+        {kind === "restore"
+          ? "We found unsaved changes from this device"
+          : "Your unsaved changes on this device are based on an older version and can't be merged"}
+      </p>
+      {kind === "restore" && (
+        <button type="button" className="board-action board-action-primary" onClick={onRestore}>
+          Restore
+        </button>
+      )}
+      <button type="button" className="board-action" onClick={onDiscard}>
+        Discard
+      </button>
+    </div>
+  );
+}
 
 /**
  * Inline conflict alert: another tab or device saved this Board. Autosave has stopped; the only
