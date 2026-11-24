@@ -86,3 +86,27 @@ BOARD_ORIGINS = frozenset({"learner", "ai"})
 BOARD_ZOOM_MIN = 0.1
 BOARD_ZOOM_MAX = 30
 BOARD_BACKGROUND_MAX_LENGTH = 32
+
+# --- AI provider calls (Story 3.1, AD-7) ---
+
+# Provider calls per generation, including the first one.
+AI_MAX_ATTEMPTS = 3
+
+# A `provider_invalid_output` (empty, non-JSON, blocked, truncated) is retried at most this often.
+AI_MAX_INVALID_OUTPUT_RETRIES = 1
+
+# HTTP timeout of a single provider call (seconds); never longer than what is left of the
+# overall deadline.
+AI_CALL_TIMEOUT_SECONDS = 30
+
+# Overall deadline for one generation, across all attempts and backoff sleeps (seconds).
+AI_TOTAL_TIMEOUT_SECONDS = 60
+
+# Concurrent provider calls per process (a BoundedSemaphore) and how long a call may wait for a
+# free slot before failing with `provider_overloaded` (seconds).
+AI_MAX_CONCURRENCY = 4
+AI_CONCURRENCY_WAIT_SECONDS = 0.5
+
+# Exponential backoff between retries: base * 2^(attempt - 1), capped, with jitter (seconds).
+AI_BACKOFF_BASE_SECONDS = 1.0
+AI_BACKOFF_MAX_SECONDS = 8.0
