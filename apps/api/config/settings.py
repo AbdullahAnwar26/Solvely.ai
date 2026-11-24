@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     "core",
     "accounts",
     "lessons",
+    "ai",
 ]
 
 MIDDLEWARE = [
@@ -139,9 +140,19 @@ REST_FRAMEWORK = {
 }
 SPECTACULAR_SETTINGS = {"TITLE": "Whiteboard Tutor API", "VERSION": "0.1.0"}
 
-# AI provider config (consumed by the AI service in Phase 4).
+# AI provider (Story 3.1). `gemini` in every real environment; tests use `fake`.
+# No default model id: without GEMINI_MODEL (or the key) calls fail with provider_unavailable.
+AI_PROVIDER = env("AI_PROVIDER", default="gemini")
 GEMINI_API_KEY = env("GEMINI_API_KEY", default="")
 GEMINI_MODEL = env("GEMINI_MODEL", default="")
+AI_MAX_ATTEMPTS = limits.AI_MAX_ATTEMPTS
+AI_MAX_INVALID_OUTPUT_RETRIES = limits.AI_MAX_INVALID_OUTPUT_RETRIES
+AI_CALL_TIMEOUT_SECONDS = limits.AI_CALL_TIMEOUT_SECONDS
+AI_TOTAL_TIMEOUT_SECONDS = limits.AI_TOTAL_TIMEOUT_SECONDS
+AI_MAX_CONCURRENCY = limits.AI_MAX_CONCURRENCY
+AI_CONCURRENCY_WAIT_SECONDS = limits.AI_CONCURRENCY_WAIT_SECONDS
+AI_BACKOFF_BASE_SECONDS = limits.AI_BACKOFF_BASE_SECONDS
+AI_BACKOFF_MAX_SECONDS = limits.AI_BACKOFF_MAX_SECONDS
 
 if not DEBUG:
     SESSION_COOKIE_SECURE = CSRF_COOKIE_SECURE = env.bool("DJANGO_SECURE_COOKIES", default=True)

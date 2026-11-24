@@ -11,3 +11,8 @@ per-file-ignores = {"config/settings_test.py" = ["F403", "F401"], "tests/*" = ["
 DJANGO_SETTINGS_MODULE = "config.settings_test"
 python_files = ["test_*.py"]
 testpaths = ["tests"]
+# Live provider tests never run by default; opt in with `-m live` (and real credentials).
+addopts = "-m 'not live'"
+markers = [
+    "live: calls the real AI provider; needs GEMINI_API_KEY and GEMINI_MODEL and `-m live`",
+]

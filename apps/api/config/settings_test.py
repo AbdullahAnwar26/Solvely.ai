@@ -12,3 +12,12 @@ PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 # Production settings and urls never include them.
 INSTALLED_APPS = [*INSTALLED_APPS, "tests.ownership_fixture"]  # noqa: F405
 ROOT_URLCONF = "tests.urls"
+
+# Tests never call Gemini (AD-12): the factory hands out the FakeProvider. AIService tests inject
+# their own sleep and clock, so these small values only bound anything that slips through.
+AI_PROVIDER = "fake"
+AI_CALL_TIMEOUT_SECONDS = 2
+AI_TOTAL_TIMEOUT_SECONDS = 5
+AI_CONCURRENCY_WAIT_SECONDS = 0.01
+AI_BACKOFF_BASE_SECONDS = 0.0
+AI_BACKOFF_MAX_SECONDS = 0.0
