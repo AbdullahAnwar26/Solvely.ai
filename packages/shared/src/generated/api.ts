@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+    "/api/v1/ai/status/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Staff-only provider diagnostics. Never returns the API key or any part of it. */
+        get: operations["ai_status"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/account/delete/": {
         parameters: {
             query?: never;
@@ -290,6 +307,13 @@ export interface components {
         AccountDelete: {
             password: string;
         };
+        AIStatus: {
+            configured: boolean;
+            max_attempts: number;
+            max_concurrency: number;
+            model: string | null;
+            provider: components["schemas"]["ProviderEnum"];
+        };
         BoardAppState: {
             /** Format: double */
             scrollX?: number;
@@ -380,6 +404,12 @@ export interface components {
         Preferences: {
             theme_preference: components["schemas"]["ThemePreferenceEnum"];
         };
+        /**
+         * @description * `gemini` - gemini
+         *     * `fake` - fake
+         * @enum {string}
+         */
+        ProviderEnum: "gemini" | "fake";
         Ready: {
             status: components["schemas"]["ReadyStatusEnum"];
         };
@@ -419,6 +449,32 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    ai_status: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AIStatus"];
+                };
+            };
+            /** @description Error envelope: anonymous or not staff. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     auth_account_delete_create: {
         parameters: {
             query?: never;
