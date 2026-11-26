@@ -4,8 +4,9 @@ Teaching code builds a `ProviderRequest`, hands it to `AIService` and gets a `Pr
 back; it never names a vendor, an SDK or a model id.
 """
 from typing import Any, Protocol, runtime_checkable
+from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class ProviderRequest(BaseModel):
@@ -23,9 +24,22 @@ class ProviderRequest(BaseModel):
     # JSON schema the output must follow.
     response_schema: dict[str, Any]
     request_id: str | None = None
+    # Server-generated Step UUID. Providers add it to the (trusted) system instruction, so it must
+    # be a real UUID and can never carry free text; it is normalised to canonical form.
+    step_id: str | None = None
     max_output_tokens: int = Field(gt=0)
     # Per-attempt HTTP timeout; set by AIService (never past the overall deadline).
     timeout_seconds: float | None = Field(default=None, gt=0)
+
+    @field_validator("step_id", mode="before")
+    @classmethod
+    def _step_id_must_be_a_uuid(cls, value):
+        if value is None:
+            return None
+        try:
+            return str(UUID(str(value)))
+        except ValueError:
+            raise ValueError("step_id must be a UUID") from None
 
 
 class Usage(BaseModel):

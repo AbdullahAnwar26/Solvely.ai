@@ -113,9 +113,16 @@ class GeminiProvider:
     def generate_json(self, request):
         client = self._get_client()
         timeout = request.timeout_seconds or self._timeout_seconds
+        system_instruction = request.system_instruction
+        if request.step_id is not None:
+            system_instruction += (
+                "\n\nFor this Lesson Step, set the top-level step_id field exactly to "
+                f"{request.step_id}. Echo the server-generated UUID exactly; do not invent or "
+                "modify it."
+            )
         config = types.GenerateContentConfig(
             # Trusted, versioned prompt text only (AD-9).
-            system_instruction=request.system_instruction,
+            system_instruction=system_instruction,
             response_mime_type="application/json",
             response_json_schema=request.response_schema,
             max_output_tokens=request.max_output_tokens,
