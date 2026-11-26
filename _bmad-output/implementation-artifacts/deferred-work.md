@@ -44,3 +44,6 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-2-4-resume-and-recovery.md`
   summary: Consider a confirm step before "Restore" replaces edits made after opening, and revisit per-tab draft keys so a second tab gets its own protection; review how noisy the "Unsaved changes" announcement is with a screen reader (Story 7.2)
   evidence: accepted judgment calls in the Story 2.4 report.
+- source_spec: `_bmad-output/implementation-artifacts/spec-3-1-ai-provider-port.md`
+  summary: Run the optional live smoke test once the user adds GEMINI_API_KEY and GEMINI_MODEL to apps/api/.env (`pytest -m live`); re-check the Gemini docs for `generate_content` versus the newer `interactions` API and the 400-error mapping before Story 3.5
+  evidence: adapter verified only against mocks and installed SDK types; no key was available.
