@@ -25,7 +25,16 @@ def test_gemini_returns_schema_shaped_json(request):
     if not (settings.GEMINI_API_KEY and settings.GEMINI_MODEL):
         pytest.skip("GEMINI_API_KEY and GEMINI_MODEL are not set")
 
-    service = AIService(GeminiProvider.from_settings(), semaphore=threading.BoundedSemaphore(1))
+    # The test settings use tiny AI timeouts for the offline tests; a real call needs real ones.
+    service = AIService(
+        GeminiProvider.from_settings(),
+        semaphore=threading.BoundedSemaphore(1),
+        call_timeout=60,
+        total_timeout=150,
+        max_attempts=3,
+        backoff_base=2,
+        backoff_max=10,
+    )
     result = service.generate_json(
         ProviderRequest(
             system_instruction="Answer the arithmetic question as JSON.",
