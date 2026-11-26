@@ -110,3 +110,18 @@ AI_CONCURRENCY_WAIT_SECONDS = 0.5
 # Exponential backoff between retries: base * 2^(attempt - 1), capped, with jitter (seconds).
 AI_BACKOFF_BASE_SECONDS = 1.0
 AI_BACKOFF_MAX_SECONDS = 8.0
+
+# --- Versioned lesson output (Story 3.2) ---
+
+# Provider output is bounded independently of Board persistence limits.
+LESSON_SCHEMA_VERSION = 1
+LESSON_STEP_DESCRIPTION_MAX_LENGTH = 2000
+LESSON_STEP_ALT_MAX_LENGTH = 2000
+LESSON_MAX_OPERATIONS = 100
+LESSON_MAX_TARGETS = 100
+LESSON_PROVISIONAL_ID_MAX_LENGTH = 64
+LESSON_MAX_ADDED_ELEMENTS = 100
+LESSON_ELEMENT_TEXT_MAX_LENGTH = BOARD_TEXT_MAX_LENGTH
+LESSON_PROVIDER_ELEMENT_TYPES = frozenset(
+    {"rectangle", "diamond", "ellipse", "arrow", "line", "freedraw", "text"}
+)
