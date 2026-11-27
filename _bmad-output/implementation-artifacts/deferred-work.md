@@ -50,3 +50,9 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-3-2-lesson-schema-and-board-operation-validator.md`
   summary: Add a property-style test that generates every valid operation kind (add, update, remove, highlight, set_viewport) in mixed orders so a valid-path crash like the set_viewport one cannot hide behind rejection-only tests; consider moving shared limits into a framework-free `domain/limits.py` to honour AD-1 literally
   evidence: the valid set_viewport crash found in the Story 3.2 review (2026-11-06).
+- source_spec: `_bmad-output/implementation-artifacts/spec-3-3-deterministic-layout-engine.md`
+  summary: Flowchart and concept-map arrows are straight lines: a back edge (loop) is drawn on top of its forward edge, and a long edge between non-adjacent layers can cross an unrelated box. Add edge routing or dummy-node layering, and barycentre ordering to cut crossings, if Story 3.5 fixtures show it looks wrong
+  evidence: engine output for a two-node loop gives two identical arrow geometries; the overlap rule deliberately excludes connectors.
+- source_spec: `_bmad-output/implementation-artifacts/spec-3-3-deterministic-layout-engine.md`
+  summary: Story 3.6's frontend adapter must create arrows from width, height and `angle` (no `points` in the schema) and honour the assumed 20 px default font and 1200x700 canvas; measure real Excalidraw glyph widths in a browser once the adapter exists and tighten or loosen LAYOUT_CELL_WIDTH. Run an independent code review on layout.py before Story 3.5 builds on it
+  evidence: layout contract assumptions listed in the Story 3.3 spec.
