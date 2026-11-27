@@ -47,3 +47,6 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-3-1-ai-provider-port.md`
   summary: Run the optional live smoke test once the user adds GEMINI_API_KEY and GEMINI_MODEL to apps/api/.env (`pytest -m live`); re-check the Gemini docs for `generate_content` versus the newer `interactions` API and the 400-error mapping before Story 3.5
   evidence: adapter verified only against mocks and installed SDK types; no key was available.
+- source_spec: `_bmad-output/implementation-artifacts/spec-3-2-lesson-schema-and-board-operation-validator.md`
+  summary: Add a property-style test that generates every valid operation kind (add, update, remove, highlight, set_viewport) in mixed orders so a valid-path crash like the set_viewport one cannot hide behind rejection-only tests; consider moving shared limits into a framework-free `domain/limits.py` to honour AD-1 literally
+  evidence: the valid set_viewport crash found in the Story 3.2 review (2026-11-06).
