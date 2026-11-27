@@ -125,3 +125,44 @@ LESSON_ELEMENT_TEXT_MAX_LENGTH = BOARD_TEXT_MAX_LENGTH
 LESSON_PROVIDER_ELEMENT_TYPES = frozenset(
     {"rectangle", "diamond", "ellipse", "arrow", "line", "freedraw", "text"}
 )
+
+# --- Deterministic layout (Story 3.3) ---
+
+# Text is measured with Excalidraw's default 20 px font because the Board Operation schema carries
+# no font size. Every character cell is assumed 0.65 em wide (wider than most glyphs) and
+# non-ASCII characters count as two cells, so measured boxes are never narrower than the real text.
+LAYOUT_FONT_SIZE = 20
+LAYOUT_CELL_WIDTH = 13
+LAYOUT_LINE_HEIGHT = 25
+
+# Spacing in scene units: padding inside containers, gaps between boxes and layers, and the empty
+# band left between a new Step's content and what is already on the Board.
+LAYOUT_PADDING = 16
+LAYOUT_GAP_X = 50
+LAYOUT_GAP_Y = 90
+LAYOUT_SECTION_GAP = 80
+
+# Wrap widths in character cells.
+LAYOUT_PROSE_CELLS = 60
+LAYOUT_NODE_CELLS = 24
+LAYOUT_LABEL_CELLS = 18
+LAYOUT_CODE_CELLS = 60
+LAYOUT_NOTE_CELLS = 36
+
+# Reference canvas assumed when fitting a Step's viewport, the outer margin, and the smallest zoom
+# a Step may need (content that would need less is refused as too large to read).
+LAYOUT_CANVAS_WIDTH = 1200
+LAYOUT_CANVAS_HEIGHT = 700
+LAYOUT_VIEWPORT_MARGIN = 40
+LAYOUT_MIN_ZOOM = 0.25
+
+# Input bounds for the structured content handed to the layout engine.
+LAYOUT_MAX_SOLUTION_LINES = 20
+LAYOUT_MAX_CODE_LINES = 30
+LAYOUT_MAX_NODES = 24
+LAYOUT_MAX_EDGES = 40
+LAYOUT_LINE_MAX_LENGTH = 300
+LAYOUT_NODE_TEXT_MAX_LENGTH = 200
+LAYOUT_LABEL_MAX_LENGTH = 60
+LAYOUT_CODE_LINE_MAX_LENGTH = 200
+LAYOUT_NOTE_MAX_LENGTH = 200
