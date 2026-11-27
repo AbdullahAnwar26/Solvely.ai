@@ -4,6 +4,7 @@ This test module (with the conftest guard) is the only place outside `ai/provide
 that touches `google.genai`, and only to build fake responses and errors.
 """
 import logging
+from uuid import uuid4
 
 import httpx
 import pytest
@@ -98,6 +99,8 @@ def test_happy_path_maps_request_and_result():
     assert isinstance(provider, AIProvider)
     result = provider.generate_json(make_request())
     assert result.data == {"answer": "4"}
+
+
     assert result.usage == Usage(input_tokens=11, output_tokens=8)
     assert result.model == MODEL + "-001"
 
@@ -120,6 +123,16 @@ def test_happy_path_maps_request_and_result():
     contents = call["contents"]
     assert len(contents) == 1 and contents[0].role == "user"
     assert contents[0].parts[0].text == "What is 2 + 2?"
+
+
+def test_step_id_is_included_in_provider_instructions():
+    provider, created = provider_with(response())
+    step_id = str(uuid4())
+    provider.generate_json(make_request(step_id=step_id))
+
+    call = created[0].models.calls[0]
+    assert step_id in call["config"].system_instruction
+    assert "Echo the server-generated UUID exactly" in call["config"].system_instruction
 
 
 def test_untrusted_text_only_in_user_turn():
